@@ -1,2 +1,6 @@
 # SongView
-A GUI Front End Electron Application for the LMS Song Display Command Line Tools
+A GUI Front End Application for the LMS Song Display Command Line Tools
+
+SongView is an Electron application that provides a graphical front end for the LMS command line tools to display song lyrics and chords in a browser.
+
+![SongView Imge](/images/songview.png)
