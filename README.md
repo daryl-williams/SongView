@@ -20,6 +20,7 @@ $ git clone daryl@rocinante ~/Projects/Electron/SongView $ https://github.com/da
 The build process requires node version 15.3.0 and npm version 7.11.2. If need to install node and npm we recommend using the Node Version Manager ![Node Version Manager](https://github.com/nvm-sh/nvm)
 
 ## Install
+$ cd ./SongView
 $ npm i
 
 # Run
