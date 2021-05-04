@@ -1,0 +1,21 @@
+{
+  "name": "SongView",
+  "version": "1.0.0",
+  "description": "Gui front end for LMS song display.",
+  "main": "./js/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Daryl Williams",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^12.0.5",
+    "electron-builder": "^22.10.5",
+    "electron-reloader": "^1.2.1"
+  },
+  "dependencies": {
+    "directory-tree": "^2.2.9"
+  }
+}

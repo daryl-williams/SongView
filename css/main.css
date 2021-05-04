@@ -1,0 +1,93 @@
+html, body {
+  width: 100vw;
+  height: 100vh;
+  padding: 0em;
+  margin: 0em;
+  box-sizing: border-box;
+  background-image: url("./images/yellow2.gif");
+  background-color: #efdeb5;
+}
+
+table {
+  background-color: #ccc;
+  height: 460px;
+  width: 100%;
+}
+
+.container {
+  display: grid;
+  grid-template-areas:
+      "collections collections collections collections"
+      "songlist-div song-options song-options song-options"
+      "search search search search";
+  grid-template-columns: 25% 25% 25% 25%;
+  grid-template-rows: auto auto auto;
+  border-radius: 10px;
+  border: 5px groove #ddd;
+}
+
+#collections {
+  grid-area: collections;
+  text-align: center;
+  padding: 1em;
+  margin: 0px;
+  border: 1px ridge #ddd;
+}
+
+#songlist-div {
+  grid-area: songlist-div;
+  /* height: calc(100vh - 2rem); */
+  height: 480px;
+  text-align: center;
+  background-color: #ff800d;
+  overflow-y: auto;
+  margin-right: .5em;
+  border-radius: 10px;
+  border: thin ridge #000;
+}
+
+#ul-songlist {
+  list-style-type: none;
+  text-align: left;
+  padding: 0em;
+  margin: .25em;
+}
+
+#ul-songlist li {
+  background-color: #ccc;
+  padding: .25em;
+  padding-left: 1em;
+  border: thin solid grey;
+}
+
+#ul-songlist li:hover {
+  background-color: yellow;
+}
+
+#song-options {
+  grid-area: song-options;
+  height: 480px;
+  text-align: center;
+  background-color: #ff800d;
+  padding-left: .5em;
+  padding-right: .5em;
+  border-radius: 10px;
+  border: thin ridge #000;
+}
+
+#search {
+  grid-area: search;
+  margin-top: .5em;
+  border: 1px solid grey;
+}
+
+/*
+#songlist {
+  display: inline-block;
+}
+
+#song-options {
+  display: inline-block;
+}
+*/
+

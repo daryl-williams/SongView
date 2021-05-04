@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+  <meta name="author" content="Daryl Williams" />
+  <meta name="copyright" content="Copyright &copy; Daryl Williams, 2021" />
+  <meta name="keywords" content="transpose, song, music, chords, guitar, old key, new key, modulate, your chords, classic country, lyrics, lyric sheet" />
+  <meta name="description" content="GUI front end for LMS song display application" />
+
+  <title>SongView</title>
+
+  <link rel="stylesheet" type="text/css" href="./css/main.css">
+</head>
+
+<body>
+  <div class="container">
+    <div id="collections">
+      <label for="song-collections">Song Collections</label> <select id="song-collections"></select>
+    </div>  
+
+    <div id="songlist-div">
+      Songs
+      <ul class="songlist" id="ul-songlist"></ul>
+    </div>
+    
+    <div id="song-options">
+      Options
+      <table width="900" cols="5" border="1" cellpadding="4" cellspacing="0" bordercolor="000000">
+        <tr>
+  <td colspan="4" align="center" valign="middle">
+  <div class="B">Transpose & Display Your Song Selection!</div>
+  </td>
+</tr>
+
+<!--
+<tr>
+  <td colspan="4" align="center" valign="middle">
+    <b>--- Search Results ---</b><br> <select name="SongFilePath">
+      <option value="../../lms/songs/Daryl_W/Unclassified/MoonRiver.chordpro"> Daryl_W/Unclassified: Moon River
+      <option value="../../lms/songs/John_L/All_Songs/moon_river.lmss"> John_L/All_Songs: Moon River
+    </select>
+  </td>
+</tr>
+-->
+
+<tr>
+  <td width="25%" colspan="1" align="center" valign="middle">
+    <b>--- Old Key ---</b><br> <select name="Old_key">
+      <option value=""> Automatic &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <option value="NNS"> Nashville Numbers
+      <option value="Ab"> Ab
+      <option value="A"> A
+      <option value="A#"> A#
+      <option value="Bb"> Bb
+      <option value="B"> B
+      <option value="C"> C
+      <option value="C#"> C#
+      <option value="Db"> Db
+      <option value="D"> D
+      <option value="D#"> D#
+      <option value="Eb"> Eb
+      <option value="E"> E
+      <option value="F"> F
+      <option value="F#"> F#
+      <option value="Gb"> Gb
+      <option value="G"> G
+      <option value="G#"> G#
+    </select>
+  </td>
+
+  <td width="25%" colspan="1" align="center" valign="middle">
+    <b>--- New Key ---</b><br> <select name="New_key">
+      <option value=""> No Change &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <option value="NNS"> Nashville Numbers
+      <option value="ROM"> Roman Numerals
+      <option value="Ab"> Ab
+      <option value="A"> A
+      <option value="A#"> A#
+      <option value="Bb"> Bb
+      <option value="B"> B
+      <option value="C"> C
+      <option value="C#"> C#
+      <option value="Db"> Db
+      <option value="D"> D
+      <option value="D#"> D#
+      <option value="Eb"> Eb
+      <option value="E"> E
+      <option value="F"> F
+      <option value="F#"> F#
+      <option value="Gb"> Gb
+      <option value="G"> G
+      <option value="G#"> G#
+    </select>
+  </td>
+
+  <td width="25%" colspan="1" align="center" valign="middle">
+    <b>--- Capo ---</b><br> <select name="Capo">
+      <option value="0"> No Capo &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <option value="1">  1st Fret
+      <option value="2">  2nd Fret
+      <option value="3">  3rd Fret
+      <option value="4">  4th Fret
+      <option value="5">  5th Fret
+      <option value="6">  6th Fret
+      <option value="7">  7th Fret
+      <option value="8">  8th Fret
+      <option value="9">  9th Fret
+      <option value="10"> 10th Fret
+      <option value="11"> 11th Fret
+    </select>
+  </td>
+  <td width="25%" colspan="1" align="center" valign="middle">
+    <b>--- Chord Color ---</b><br> <select name="ChordFontColor">
+      <option style="color:Blue;"        value="Blue"        selected       > Blue
+      <option style="color:Black;"       value="Black"             > Black
+      <option style="color:Red;"         value="Red"                 > Red
+      <option style="color:Crimson;"     value="Crimson"         > Crimson
+      <option style="color:Green;"       value="Green"             > Green
+      <option style="color:ForestGreen;" value="ForestGreen" > Forest Green
+      <option style="color:Orange;"      value="Orange"           > Orange
+      <option style="color:OrangeRed;"   value="OrangeRed"     > Orange Red
+      <option style="color:Brown;"       value="Brown"             > Brown
+    </select>
+  </td>
+</tr>
+
+<tr>
+  <td colspan="2" align="center" valign="middle">
+    <b>--- Sharp/Flat Notation ---</b><br> <input name="ForceSF" value="Normal" type="radio" checked="checked" > Normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                   <input name="ForceSF" value="Sharp"  type="radio"   > Sharp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                   <input name="ForceSF" value="Flat"   type="radio"    > Flat
+  </td>
+
+  <td colspan="2" align="center" valign="middle">
+    <b>--- Chord Form Popups ---</b><br> <input name="PopUps" value="None"     type="radio"      > None&nbsp;&nbsp;&nbsp;
+                                 <input name="PopUps" value="Guitar"   type="radio" checked="checked"   > Guitar&nbsp;&nbsp;&nbsp;
+                                 <input name="PopUps" value="Mandolin" type="radio"  > Mandolin&nbsp;&nbsp;&nbsp;
+                                 <input name="PopUps" value="Ukulele"  type="radio"   > Ukulele
+  </td>
+</tr>
+
+<tr>
+  <td colspan="2" align="center" valign="middle">
+    <b>--- Full Screen (F11) ---</b><br><input name="FullScreen" value="Off" type="radio" checked="checked" > Off&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <input name="FullScreen" value="On"  type="radio"   > On
+  </td>
+
+  <td colspan="2" align="center" valign="middle">
+    <b>--- Format ---</b><br><input name="Format" value="Display"   type="radio" checked="checked" > Display&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                             <input name="Format" value="Print"     type="radio"                   > Print&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                             <input name="Format" value="PDF"       type="radio"                   > PDF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                             <input name="Format" value="CopyPaste" type="radio"                   > Copy/Paste
+  </td>
+</tr>
+
+<tr>
+  <td colspan="2" align="center" valign="middle">
+
+    <b>--- PDF Page Control ---</b><br><input name="PDF_Pages" value="Auto" type="radio" checked="checked" >Automatic&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input name="PDF_Pages" value="One"  type="radio"                   >Force 1 Page&nbsp;&nbsp;&nbsp;&nbsp;
+                                       <input name="PDF_Pages" value="Two"  type="radio"                   >Force 2 Pages
+  </td>
+
+  <td colspan="2" align="center" valign="middle">
+    <b>--- PDF Font Size ---</b><br>
+    <SELECT name="PDF_FontSize">
+      <option value="0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Automatic&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <option value="8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8
+      <option value="9"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9
+      <option value="10">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10
+      <option value="11">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11
+      <option value="12">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;12
+      <option value="13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13
+      <option value="14">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;14
+      <option value="15">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15
+      <option value="16">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16
+      <option value="18">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18
+      <option value="20">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;20
+    </SELECT>
+  </td>
+</tr>
+
+<tr>
+  <td colspan="1" align="center" valign="middle">
+    <input type="submit" name="SearchAgainButton" value="Search Again" onclick='this.form.target="_self";' />
+  </td>
+
+  <td colspan="2" align="center" valign="middle">
+    <b>--- Output --- </b><br> <input name="Output" value="tlc" type="radio" checked="checked" > Two Line&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <input name="Output" value="tcp" type="radio"  > ChordPro&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <input name="Output" value="tlo" type="radio"  > Lyrics Only
+  </td>
+
+  <td colspan="1" align="center" valign="middle">
+    <input type="submit" name="DisplaySongButton" value="Display Song" onclick="SnapWindowDimensions()" />
+  </td>
+</tr>
+
+<tr>
+
+  <td colspan="4" align="center" valign="middle">
+    &nbsp;
+  </td>
+</tr>
+
+</form>
+
+<tr>
+  <td colspan="4" align="center" valign="middle"> <div class="CR"> &copy; 2020 Logue Music Services</div> </td>
+</tr>
+      </table>
+    </div>  
+
+    <div id="search">Search</div>  
+  </div>
+
+  <script type="module" src="./js/songview.js"></script>
+</body>
+</html>
+
