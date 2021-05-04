@@ -15,6 +15,7 @@ const path = require('path');
 const { app, dialog, ipcMain, BrowserWindow, Menu} = require('electron');
 
 const Store = require('./store.js');
+const store = new Store();
 
 ipcMain.on('asynchronous-message', (event, arg) => {
   console.log('songview:/js/main.js:dialog.showOpenDialog(): arg =', arg) // prints "ping"

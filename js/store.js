@@ -6,16 +6,33 @@
 
 const fs = require('fs');
 const path = require('path');
-const electron = require('electron');
+const { electron, app } = require('electron');
+
 class Store {
   constructor(opts) {
     // Renderer process has to get `app` module via `remote`, whereas the main process can get it directly
     // app.getPath('userData') will return a string of the user's app data directory path.
-    const userDataPath = (electron.app || electron.remote.app).getPath('userData');
+    //const userDataPath = (electron.app || electron.remote.app).getPath('userData');
+
+    let userDataPath;
+
+    // Define user preferences file and adjust for MacOS.
+    let appname = app.getName().toLowerCase();
+    if (process.platform === 'darwin') {
+      userDataPath = app.getPath('home') + '/.config/' + appname;
+    }
+    else {
+      userDataPath = app.getPath('userData');
+    }
+    console.log('songview:/js/store.js Store.constructor(): userDataPath =', userDataPath);
+
     // We'll use the `configName` property to set the file name and path.join to bring it all together as a string
-    this.path = path.join(userDataPath, opts.configName + '.json');
+    this.path = path.join(userDataPath, 'preferences.json');
+    console.log('songview:/js/store.js Store.constructor(): this.path =', this.path);
     
-    this.data = parseDataFile(this.path, opts.defaults);
+    //console.log('songview:/js/store.js Store.constructor(): opts.defaults =', opts.defaults);
+    //this.data = parseDataFile(this.path, opts.defaults);
+    this.data = parseDataFile(this.path);
   }
   
   // This will just return the property on the `data` object
