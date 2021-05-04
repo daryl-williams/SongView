@@ -14,7 +14,7 @@ SongView is an Electron application that provides a graphical front end for the 
 # Download
 Download or clone the repository
 
-$ git clone daryl@rocinante ~/Projects/Electron/SongView $ https://github.com/daryl-williams/SongView.git
+$ git clone https://github.com/daryl-williams/SongView.git
 
 # Build
 The build process requires node version 15.3.0 and npm version 7.11.2. If need to install node and npm we recommend using the Node Version Manager ![Node Version Manager](https://github.com/nvm-sh/nvm)
