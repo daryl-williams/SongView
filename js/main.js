@@ -169,20 +169,25 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
   mainWindow.loadFile('index.html')
   mainWindow.webContents.openDevTools();
 
-  let launchSong = (url) => {
-console.log('songview:/js/main.js:launchSong(): launched url =', url);
-    //shell.openExternal(url);
+  let launchSong = (songfile) => {
+console.log('songview:/js/main.js:launchSong(): launched songfile =', songfile);
+console.log('songview:/js/main.js:createWindow(): HERE >>> preference_data =', preference_data.lms_bin)
 
-    exec("/bin/ls -laF", (error, data, getter) => {
+    //let cmd = preference_data.lms_bin + '/' + 'dp' ;// + ' ' + songfile;
+    let cmd = preference_data.lms_bin + '/' + 'dp' + ' ' + songfile;
+console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
+
+    //shell.openExternal(url);
+    exec(cmd, (error, data, getter) => {
       if(error){
-        console.log("error",error.message);
+        console.log("error", error.message);
         return;
       }
       if(getter){
-        console.log("LS -laF data",data);
+        console.log("GETTER cmd =", cmd, 'data =', data);
         return;
       }
-      console.log("data",data);
+      console.log("data", data);
     });
   };
 
@@ -207,12 +212,14 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): songname =', songname);
 
 console.log('songview:/js/main.js:ipcMain.on(toMain): cwd =', process.cwd());
 
-      let url = 'file:' + preference_data.songlist.path + '/' + songname;
+//      let url = 'file:' + preference_data.songlist.path + '/' + songname;
 //    let url = 'file:/' + preference_data.songlist.path + '/' + songname;
-console.log('songview:/js/main.js:ipcMain.on(toMain): url =', url);
+//console.log('songview:/js/main.js:ipcMain.on(toMain): url =', url);
+
+      let songfile = preference_data.songlist.path + '/' + songname;
 
       // Open the song in the browser.
-      launchSong(url);
+      launchSong(songfile);
     }
   });
 }
