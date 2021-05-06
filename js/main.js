@@ -12,7 +12,9 @@ console.log('songview:/js/main.js:dialog.showOpenDialog(): template =', template
 
 const fs = require('fs');
 const path = require('path');
-const { app, dialog, ipcMain, BrowserWindow, Menu} = require('electron');
+const { exec } = require("child_process");
+
+const { app, dialog, ipcMain, BrowserWindow, Menu, shell, screen } = require('electron');
 
 const Store = require('./store.js');
 const store = new Store();
@@ -34,40 +36,14 @@ if (env === 'development') {
   } catch (_) {console.log('development environment hot reload error');}
 }
 
-global.songview = {
+global.SongView = {
   "collection": [],
   "foo": "bar"
 }
 
 function createWindow () {
 
-  let width = 1024, height = 600;
-  mainWindow = new BrowserWindow({
-    icon: 'favicon.ico',
-    title: 'FooBar',
-    width: width,
-    height: height,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      enableRemoteModule: false,
-      preload: path.join(__dirname, 'preload.js')
-    },
-    frame: true
-  })
-
-//  mainWindow.setTitle('Barfallowmew');
-
-  // The BrowserWindow class extends the node.js core EventEmitter class, so we use that API
-  // to listen to events on the BrowserWindow. The resize event is emitted when the window size changes.
-  mainWindow.on('resize', () => {
-    // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
-    // the height, width, and x and y coordinates.
-    let { width, height } = mainWindow.getBounds();
-    // Now that we have them, save them using the `set` method.
-    store.set('windowBounds', { width, height });
-  });
-
+  let default_window_width = 1024, default_window_height = 600;
   let userDataPath;
 
   // Define user preferences file and adjust for MacOS.
@@ -102,8 +78,8 @@ function createWindow () {
     app.exit(1);
   }
 
-  // The preferences directory now exists. See if the preferences file exists,
-  // if not create it.
+  // The preferences directory now exists. Next we check if the preferences file exists.
+  // If it does not we create it else we read the preferences files and set default values.
 
   // Define the preferences filename.
   let preferences_file = path.join(userDataPath, 'preferences.json');
@@ -112,138 +88,139 @@ function createWindow () {
   // Now read the data.
   let collections;
   let preference_data;
+  let createPreferencesFile = false;
 
-    let res = fs.existsSync(preferences_file);
-    if (res === false) {
+  let res = fs.existsSync(preferences_file);
+  if (res === true) {
+    // The file exists.
+    preference_data = JSON.parse(fs.readFileSync(preferences_file));
+console.log('songview:/js/main.js:createWindow(): Existing preference_data =', preference_data)
+    default_window_width = preference_data.windowBounds.width;
+    default_window_height = preference_data.windowBounds.height;
+console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
+console.log('songview:/js/main.js:createWindow(): Window location Y =', default_window_height);
+  }
+  else {
 console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
-      // File does not exists, so create it.
-      dialog.showOpenDialog(mainWindow, {
-        title: 'Preferences',
-        message: 'Please select at least one SONG COLLECTION',
-        properties: ['openDirectory', 'multiSelections']
-      }).then(result => {
-        console.log('SONG COLLECTIONS: ', result.filePaths)
-        if (result.canceled) {
-          // The Cancel button has been pressed.
-          try {
-            console.log('songview:/js/main.js:dialog.showOpenDialog(): CANCELED: ', result.filePaths)
-            app.exit(1);
-          }
-          catch(error) {
-            console.log('songview:/js/main.js:dialog.showOpenDialog(): error =', error);
-          };
+    createPreferencesFile = true;
+  }
+
+  mainWindow = new BrowserWindow({
+    icon: 'favicon.ico',
+    title: 'FooBar',
+    width: default_window_width,
+    height: default_window_height,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    frame: true
+  })
+
+  // This is the event handler for the mainWindow resize event.
+  mainWindow.on('resize', () => {
+    // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
+    // the height, width, and x and y coordinates.
+    let { width, height } = mainWindow.getBounds();
+    // Now save the new dimension in the preferences file.
+    store.set('windowBounds', { width, height });
+  });
+
+  if (createPreferencesFile) {
+    // The file does not exists, so open a dialog window to select song collection directory.
+    dialog.showOpenDialog(mainWindow, {
+      title: 'Preferences',
+      message: 'Please select at least one SONG COLLECTION',
+      properties: ['openDirectory', 'multiSelections']
+    }).then(result => {
+      console.log('SONG COLLECTIONS: ', result.filePaths)
+      if (result.canceled) {
+        // The Cancel button has been pressed.
+        try {
+          console.log('songview:/js/main.js:dialog.showOpenDialog(): CANCELED: ', result.filePaths)
+          app.exit(1);
         }
-        else {
-          // We now have at least one song collection.
-          collections = result.filePaths;
+        catch(error) {
+          console.log('songview:/js/main.js:dialog.showOpenDialog(): error =', error);
+        };
+      }
+      else {
+        // We now have at least one song collection.
+        collections = result.filePaths;
 console.log('songview:/js/main.js:dialog.showOpenDialog(): COLLECTIONS =', collections);
-          const jsonstr = "{\"collections\": " + JSON.stringify(result.filePaths) + "}";
-          const jsonobj = JSON.parse(jsonstr);
+        const jsonstr = "{\"collections\": " + JSON.stringify(result.filePaths) + "}";
+        const jsonobj = JSON.parse(jsonstr);
 
-          // Now write our preferences to disk.
-          fs.writeFileSync(preferences_file, JSON.stringify(jsonobj));
+        // Now write our preferences to disk.
+        fs.writeFileSync(preferences_file, JSON.stringify(jsonobj));
 console.log('songview:/js/main.js:dialog.showOpenDialog(): WROTE COLLECTIONS to PREFERENCES=', preferences_file);
-          preference_data = JSON.parse(fs.readFileSync(preferences_file));
+        preference_data = JSON.parse(fs.readFileSync(preferences_file));
 console.log('songview:/js/main.js:createWindow(): preference_data =', preference_data)
-        }
-      }).catch(error => {
-        console.log('songview:/js/main.js:dialog.showOpenDialog(): error =', error)
-        app.exit(1);
-      });
-    }
-    else {
-      preference_data = JSON.parse(fs.readFileSync(preferences_file));
-    }
+      }
+    }).catch(error => {
+      console.log('songview:/js/main.js:dialog.showOpenDialog(): error =', error)
+      app.exit(1);
+    });
+  }
 
+  // Open the Application Main Window.
   mainWindow.loadFile('index.html')
   mainWindow.webContents.openDevTools();
 
-  ipcMain.on("toMain", (event, args) => {
-    // Do something with the data.
-    console.log('songview:/js/main.js:ipcMain.on(toMain): received request =', args);
+  let launchSong = (url) => {
+console.log('songview:/js/main.js:launchSong(): launched url =', url);
+    //shell.openExternal(url);
 
-console.log('songview:/js/main.js:app.whenReady(): >>> preference_data =', preference_data);
+    exec("/bin/ls -laF", (error, data, getter) => {
+      if(error){
+        console.log("error",error.message);
+        return;
+      }
+      if(getter){
+        console.log("LS -laF data",data);
+        return;
+      }
+      console.log("data",data);
+    });
+  };
+
+  ipcMain.on("toMain", (event, request) => {
+    // Do something with the data.
+    console.log('songview:/js/main.js:ipcMain.on(toMain): received request =', request);
 
     // Get the first songlist.
-    if (preference_data) {
+    if (request === 'sendPreferences' && preference_data.collections.length > 0) {
       const dirTree = require("directory-tree");
       const songlist = dirTree(preference_data.collections[0]);
-//console.log('songview:/js/main.js:app.whenReady(): >>> songlist =', songlist);
 
       preference_data.songlist = songlist;
 
       // Send result back to renderer process
       mainWindow.webContents.send("fromMain", preference_data);
     }
-  });
+    else if (request.substring(0, 9) === 'open-song') {
+      let arr = request.split(':');
+      let songname = arr[1].trim();
+console.log('songview:/js/main.js:ipcMain.on(toMain): songname =', songname);
 
-/*
-  Menu((defaultMenu, separator) => {
-    defaultMenu.push({
-      label: "File",
-      submenu: [
-        { label: "my first item" },
-        separator(),
-        { label: "my second item" }
-      ]
-    });
-    return defaultMenu;
-  });
+console.log('songview:/js/main.js:ipcMain.on(toMain): cwd =', process.cwd());
 
-  var menu = Menu.buildFromTemplate([
-    {
-      label: 'Menu',
-      submenu: [
-        {label:'Adjust Notification Value'},
-        {label:'CoinMarketCap'},
-        {label:'Exit'}
-      ]
+      let url = 'file:' + preference_data.songlist.path + '/' + songname;
+//    let url = 'file:/' + preference_data.songlist.path + '/' + songname;
+console.log('songview:/js/main.js:ipcMain.on(toMain): url =', url);
+
+      // Open the song in the browser.
+      launchSong(url);
     }
-  ])
-  Menu.setApplicationMenu(menu);
-*/
+  });
 }
 
-/*
-app.whenReady().then(() => {
-  createWindow()
-
-  const template = [
-    {
-      label: 'FooBar',
-      submenu: [
-        {label: 'item #1'},
-        {label: 'item #2'},
-        {label: 'item #3'}
-      ]
-    }
-  ];
-
-  const menu = Menu.buildFromTemplate(template);
-  //Menu.setApplication(menu);
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
-    }
-  })
-})
-*/
-
-/*
-const template = [
-  {
-    label: 'FooBar',
-    submenu: [
-      {label: 'item #1'},
-      {label: 'item #2'},
-      {label: 'item #3'}
-    ]
-  }
-];
-*/
-
 app.on('ready', () => {
+  const size = screen.getPrimaryDisplay().size;
+  console.log('songview:/js/main.js: DISPLAY SIZE =', size);
+
   //app.setName('fooBar');
   createWindow()
   const menu = Menu.buildFromTemplate(template);

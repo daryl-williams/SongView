@@ -61,7 +61,8 @@ table {
 }
 
 #ul-songlist li:hover {
-  background-color: yellow;
+  color: white;
+  background-color: green;
 }
 
 #song-options {
