@@ -8,7 +8,13 @@
 const env = process.env.NODE_ENV || 'development';
 
 const template = require('./menu-template.js').template;
-console.log('songview:/js/main.js:dialog.showOpenDialog(): template =', template);
+console.log('songview:/js/main.js:dialog.showOpenDialog(): main menu template =', template);
+
+const preferences = require('./preferences.js').preferences;
+console.log('songview:/js/main.js: >>> OPTIONS =', preferences.options);
+
+//const myPref = preferences.value('dataStore');
+//console.log('songview:/js/main.js:dialog.showOpenDialog(): MYPREF =', myPref);
 
 const fs = require('fs');
 const path = require('path');
@@ -95,10 +101,15 @@ function createWindow () {
     // The file exists.
     preference_data = JSON.parse(fs.readFileSync(preferences_file));
 console.log('songview:/js/main.js:createWindow(): Existing preference_data =', preference_data)
-    default_window_width = preference_data.windowBounds.width;
-    default_window_height = preference_data.windowBounds.height;
-console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
-console.log('songview:/js/main.js:createWindow(): Window location Y =', default_window_height);
+    if (preference_data.windowBounds === undefined) {
+      createPreferencesFile = true;
+    }
+    else {
+      default_window_width = preference_data.windowBounds.width;
+      default_window_height = preference_data.windowBounds.height;
+      console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
+      console.log('songview:/js/main.js:createWindow(): Window location Y =', default_window_height);
+    }
   }
   else {
 console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
@@ -129,6 +140,7 @@ console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.')
   });
 
   if (createPreferencesFile) {
+preferences.show();
     // The file does not exists, so open a dialog window to select song collection directory.
     dialog.showOpenDialog(mainWindow, {
       title: 'Preferences',
@@ -183,8 +195,8 @@ console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
         console.log("error", error.message);
         return;
       }
-      if(getter){
-        console.log("GETTER cmd =", cmd, 'data =', data);
+      if (getter){
+        console.log("GETTER cmd =", cmd, ', data = >>>' + data + '<<<');
         return;
       }
       console.log("data", data);
@@ -194,9 +206,10 @@ console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
   ipcMain.on("toMain", (event, request) => {
     // Do something with the data.
     console.log('songview:/js/main.js:ipcMain.on(toMain): received request =', request);
+    console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
 
     // Get the first songlist.
-    if (request === 'sendPreferences' && preference_data.collections.length > 0) {
+    if (request === 'sendPreferences' && preference_data != undefined && preference_data.collections !== undefined && preference_data.collections.length > 0) {
       const dirTree = require("directory-tree");
       const songlist = dirTree(preference_data.collections[0]);
 
