@@ -1,3 +1,8 @@
+logfile
+
+# vi .swp files
+*.swp
+
 # LMS nul file...
 nul
 

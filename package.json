@@ -1,5 +1,5 @@
 {
-  "name": "SongView",
+  "name": "songview",
   "version": "1.0.0",
   "description": "Gui front end for LMS song display.",
   "main": "./js/main.js",

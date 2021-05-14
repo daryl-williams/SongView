@@ -7,28 +7,14 @@
 
 const env = process.env.NODE_ENV || 'development';
 
-const template = require('./menu-template.js').template;
-console.log('songview:/js/main.js:dialog.showOpenDialog(): main menu template =', template);
-
-const preferences = require('./preferences.js').preferences;
-console.log('songview:/js/main.js: >>> OPTIONS =', preferences.options);
-
-//const myPref = preferences.value('dataStore');
-//console.log('songview:/js/main.js:dialog.showOpenDialog(): MYPREF =', myPref);
-
 const fs = require('fs');
 const path = require('path');
 const { exec } = require("child_process");
-
 const { app, dialog, ipcMain, BrowserWindow, Menu, shell, screen } = require('electron');
-
 const Store = require('./store.js');
 const store = new Store();
-
-ipcMain.on('asynchronous-message', (event, arg) => {
-  console.log('songview:/js/main.js:dialog.showOpenDialog(): arg =', arg) // prints "ping"
-  event.reply('asynchronous-reply', 'pong')
-});
+const template = require('./menu-template.js').template;
+//console.log('songview:/js/main.js:dialog.showOpenDialog(): main menu template =', template);
 
 let mainWindow; //Do this so that the window object doesn't get GC'd.
 
@@ -54,7 +40,9 @@ function createWindow () {
 
   // Define user preferences file and adjust for MacOS.
   let appname = app.getName().toLowerCase();
-  if (process.platform === 'darwin') {
+  console.log('songview:/js/main.js:dialog.showOpenDialog(): appname =', appname);
+
+  if (process.platform === 'darwin' || process.platform === 'linux') {
     userDataPath = app.getPath('home') + '/.config/' + appname;
   }
   else {
@@ -100,11 +88,13 @@ function createWindow () {
   if (res === true) {
     // The file exists.
     preference_data = JSON.parse(fs.readFileSync(preferences_file));
-console.log('songview:/js/main.js:createWindow(): Existing preference_data =', preference_data)
-    if (preference_data.windowBounds === undefined) {
-      createPreferencesFile = true;
+    console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
+
+    // If there are prefered/saved attributes capture them here.
+    if (preference_data.dataStore !== undefined) {
     }
-    else {
+
+    if (preference_data.windowBounds !== undefined) {
       default_window_width = preference_data.windowBounds.width;
       default_window_height = preference_data.windowBounds.height;
       console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
@@ -112,11 +102,13 @@ console.log('songview:/js/main.js:createWindow(): Existing preference_data =', p
     }
   }
   else {
-console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
+    console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
     createPreferencesFile = true;
   }
 
+  // Create the application main window.
   mainWindow = new BrowserWindow({
+    transparent: true,
     icon: 'favicon.ico',
     title: 'FooBar',
     width: default_window_width,
@@ -139,8 +131,10 @@ console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.')
     store.set('windowBounds', { width, height });
   });
 
+/*
   if (createPreferencesFile) {
-preferences.show();
+//preferences.show();
+
     // The file does not exists, so open a dialog window to select song collection directory.
     dialog.showOpenDialog(mainWindow, {
       title: 'Preferences',
@@ -176,6 +170,7 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
       app.exit(1);
     });
   }
+*/
 
   // Open the Application Main Window.
   mainWindow.loadFile('index.html')
@@ -203,49 +198,78 @@ console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
     });
   };
 
-  ipcMain.on("toMain", (event, request) => {
-    // Do something with the data.
-    console.log('songview:/js/main.js:ipcMain.on(toMain): received request =', request);
-    console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
+  // Interprocess communicartion between main process and renderer process.
+//  ipcMain.on('asynchronous-message', (event, arg) => {
+//    console.log('songview:/js/main.js:dialog.showOpenDialog(): arg =', arg);
+//    event.reply('asynchronous-reply', 'pong')
+//  });
 
-    // Get the first songlist.
+  ipcMain.on("toMain", (event, request) => {
+    console.log('songview:/js/main.js:ipcMain.on(toMain): received request =', request);
+    //console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
+
+    // Parse the request
     if (request === 'sendPreferences' && preference_data != undefined && preference_data.collections !== undefined && preference_data.collections.length > 0) {
+      // Get the first songlist and send it to the songview.js render process.
       const dirTree = require("directory-tree");
       const songlist = dirTree(preference_data.collections[0]);
-
       preference_data.songlist = songlist;
-
       // Send result back to renderer process
       mainWindow.webContents.send("fromMain", preference_data);
     }
     else if (request.substring(0, 9) === 'open-song') {
+      // Get the first song and launch it in the default browser.
       let arr = request.split(':');
       let songname = arr[1].trim();
 console.log('songview:/js/main.js:ipcMain.on(toMain): songname =', songname);
-
 console.log('songview:/js/main.js:ipcMain.on(toMain): cwd =', process.cwd());
-
-//      let url = 'file:' + preference_data.songlist.path + '/' + songname;
-//    let url = 'file:/' + preference_data.songlist.path + '/' + songname;
-//console.log('songview:/js/main.js:ipcMain.on(toMain): url =', url);
-
       let songfile = preference_data.songlist.path + '/' + songname;
-
       // Open the song in the browser.
       launchSong(songfile);
     }
   });
-}
+};
 
 app.on('ready', () => {
+  const preferences = require('./preferences.js');
+//console.log('songview:/js/main.js: >>> PREFERENCES =', preferences);
+
+console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
+
   const size = screen.getPrimaryDisplay().size;
   console.log('songview:/js/main.js: DISPLAY SIZE =', size);
 
-  //app.setName('fooBar');
+  const displays = screen.getAllDisplays()
+  console.log('songview:/js/main.js: DISPLAYS =', displays);
+
+  const externalDisplay = displays.find((display) => {
+    return display.bounds.x !== 0 || display.bounds.y !== 0
+    //return display.bounds;
+  })
+//  console.log('songview:/js/main.js: EXTERNAL DISPLAY =', externalDisplay);
+  if (externalDisplay) {
+    win = new BrowserWindow({
+      x: externalDisplay.bounds.x + 50,
+      y: externalDisplay.bounds.y + 50
+    })
+    win.loadURL('https://github.com')
+  }
+
+  const songlist = preferences.value('songlist');
+  //console.log('songview:/js/main.js: SONGLIST =', songlist);
+
+  const collections = preferences.value('collections');
+  //console.log('songview:/js/main.js: collections =', collections);
+
+  //const notes = preferences.value('notes');
+  //console.log('songview:/js/main.js: notes =', notes);
+
+  // Create the main window.
   createWindow()
+
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
-})
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
