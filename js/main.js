@@ -19,96 +19,28 @@ const template = require('./menu-template.js').template;
 let mainWindow; //Do this so that the window object doesn't get GC'd.
 
 // Setup Hot reload.
-if (env === 'development') {
-  try {
-    require('electron-reloader')(module, {
-      debug: true,
-      watchRenderer: true
-    });
-  } catch (_) {console.log('development environment hot reload error');}
-}
+//if (env === 'development') {
+//  try {
+//    require('electron-reloader')(module, {
+//      debug: true,
+//      watchRenderer: true
+//    });
+//  } catch (err) {
+//    console.log('songview:/js/main.js: development environment hot reload error =', err);
+//  }
+//}
 
-global.SongView = {
-  "collection": [],
-  "foo": "bar"
-}
+//global.SongView = {
+//  "collection": [],
+//  "foo": "bar"
+//}
 
 function createWindow () {
 
   let default_window_width = 1024, default_window_height = 600;
-  let userDataPath;
-
-  // Define user preferences file and adjust for MacOS.
-  let appname = app.getName().toLowerCase();
-  console.log('songview:/js/main.js:dialog.showOpenDialog(): appname =', appname);
-
-  if (process.platform === 'darwin' || process.platform === 'linux') {
-    userDataPath = app.getPath('home') + '/.config/' + appname;
-  }
-  else {
-   userDataPath = app.getPath('userData');
-  }
-  console.log('songview:/js/main.js:dialog.showOpenDialog(): userDataPath =', userDataPath);
-
-  // Make sure directory exists.
-  try {
-    if (fs.existsSync(userDataPath)) {
-      console.log('songview:/js/main.js: Preferences directory exists =', userDataPath);
-    }
-    else {
-      console.log('songview:/js/main.js: Preferences directory does not exist =', userDataPath);
-      console.log('songview:/js/main.js: creating preferences directory =', userDataPath);
-
-      try {
-        fs.mkdirSync(userDataPath, true);
-      }
-      catch(error) {
-        console.log('songview:/js/main.js: error creating preferences directory, error =', error);
-        app.exit(1);
-      }
-    }
-  } catch(error) {
-    console.log('songview:/js/main.js: error checking for preferences directory, error =', error);
-    app.exit(1);
-  }
-
-  // The preferences directory now exists. Next we check if the preferences file exists.
-  // If it does not we create it else we read the preferences files and set default values.
-
-  // Define the preferences filename.
-  let preferences_file = path.join(userDataPath, 'preferences.json');
-  console.log('songview:/js/main.js:dialog.showOpenDialog(): preferences_file =', preferences_file)
-
-  // Now read the data.
-  let collections;
-  let preference_data;
-  let createPreferencesFile = false;
-
-  let res = fs.existsSync(preferences_file);
-  if (res === true) {
-    // The file exists.
-    preference_data = JSON.parse(fs.readFileSync(preferences_file));
-    console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
-
-    // If there are prefered/saved attributes capture them here.
-    if (preference_data.dataStore !== undefined) {
-    }
-
-    if (preference_data.windowBounds !== undefined) {
-      default_window_width = preference_data.windowBounds.width;
-      default_window_height = preference_data.windowBounds.height;
-      console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
-      console.log('songview:/js/main.js:createWindow(): Window location Y =', default_window_height);
-    }
-  }
-  else {
-    console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
-    createPreferencesFile = true;
-  }
-
   // Create the application main window.
   mainWindow = new BrowserWindow({
-    transparent: true,
+    transparent: false,
     icon: 'favicon.ico',
     title: 'FooBar',
     width: default_window_width,
@@ -227,15 +159,87 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): cwd =', process.cwd());
       // Open the song in the browser.
       launchSong(songfile);
     }
+    else {
+      console.log('songview:/js/main.js:ipcMain.on(toMain): UNKNOWN renderer REQUEST =', request);
+    }
   });
 };
 
 app.on('ready', () => {
-  const preferences = require('./preferences.js');
-//console.log('songview:/js/main.js: >>> PREFERENCES =', preferences);
 
-console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
+  let userDataPath;
+  console.log('songview:/js/main.js:ipcMain.on(ready): CWD =', process.cwd());
 
+  // Define user preferences file and adjust for MacOS.
+  let appname = app.getName().toLowerCase();
+  console.log('songview:/js/main.js:createWindow(): appname =', appname);
+
+  if (process.platform === 'darwin' || process.platform === 'linux') {
+    userDataPath = app.getPath('home') + '/.config/' + appname;
+  }
+  else {
+    userDataPath = app.getPath('userData');
+  }
+  console.log('songview:/js/main.js:createWindow(): userDataPath =', userDataPath);
+
+  // Make sure directory exists.
+  try {
+    if (fs.existsSync(userDataPath)) {
+      console.log('songview:/js/main.js: Preferences directory exists =', userDataPath);
+    }
+    else {
+      console.log('songview:/js/main.js: Preferences directory does not exist =', userDataPath);
+      console.log('songview:/js/main.js: creating preferences directory =', userDataPath);
+
+      try {
+        fs.mkdirSync(userDataPath, true);
+      }
+      catch(error) {
+        console.log('songview:/js/main.js: error creating preferences directory, error =', error);
+        app.exit(1);
+      }
+    }
+  } catch(error) {
+    console.log('songview:/js/main.js: error checking for preferences directory, error =', error);
+    app.exit(1);
+  }
+console.log('songview:/js/main.js: PREFERENCES directory =', userDataPath);
+
+  // The preferences directory now exists. Next we check if the preferences file exists.
+  // If it does not we create it else we read the preferences files and set default values.
+
+  // Define the preferences filename.
+  let preferences_file = path.join(userDataPath, 'preferences.json');
+  console.log('songview:/js/main.js: preferences_file =', preferences_file)
+
+  // Now read the data.
+  let collections;
+  let preference_data;
+  let createPreferencesFile = false;
+
+  let res = fs.existsSync(preferences_file);
+  if (res === true) {
+    // The file exists.
+    preference_data = JSON.parse(fs.readFileSync(preferences_file));
+    console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
+
+    // If there are prefered/saved attributes capture them here.
+    if (preference_data.dataStore !== undefined) {
+    }
+
+    if (preference_data.windowBounds !== undefined) {
+      default_window_width = preference_data.windowBounds.width;
+      default_window_height = preference_data.windowBounds.height;
+      console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
+      console.log('songview:/js/main.js:createWindow(): Window location Y =', default_window_height);
+    }
+  }
+  else {
+    console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
+    createPreferencesFile = true;
+  }
+
+/*
   const size = screen.getPrimaryDisplay().size;
   console.log('songview:/js/main.js: DISPLAY SIZE =', size);
 
@@ -246,7 +250,7 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
     return display.bounds.x !== 0 || display.bounds.y !== 0
     //return display.bounds;
   })
-//  console.log('songview:/js/main.js: EXTERNAL DISPLAY =', externalDisplay);
+  console.log('songview:/js/main.js: EXTERNAL DISPLAY =', externalDisplay);
   if (externalDisplay) {
     win = new BrowserWindow({
       x: externalDisplay.bounds.x + 50,
@@ -254,18 +258,23 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
     })
     win.loadURL('https://github.com')
   }
+*/
+
+  const preferences = require('./preferences.js');
+console.log('songview:/js/main.js: >>> PREFERENCES =', preferences);
+//console.log('songview:/js/main.js: >>> DISPLAYS =', preferences.options.defaults.displays);
 
   const songlist = preferences.value('songlist');
   //console.log('songview:/js/main.js: SONGLIST =', songlist);
 
-  const collections = preferences.value('collections');
+  collections = preferences.value('collections');
   //console.log('songview:/js/main.js: collections =', collections);
 
   //const notes = preferences.value('notes');
   //console.log('songview:/js/main.js: notes =', notes);
 
   // Create the main window.
-  createWindow()
+  createWindow();
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);

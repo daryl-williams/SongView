@@ -10,7 +10,8 @@ const ElectronPreferences = require('electron-preferences');
 
 //const electron = require('electron');
 //const ipc = electron.ipcRenderer;
-//console.log('songview:/js/preferences.js: electron =', electron);
+//const { ipcRenderer } = require('electron');
+//console.log('songview:/js/preferences.js: ipcRenderer =', ipcRenderer);
 
 //let userData;
 //let appname = app.getName().toLowerCase();
@@ -21,7 +22,7 @@ let songlist;
 let preferences = {};
 let preferenceFileExists = false;
 
-console.log('songview:/js/preferences.js: userData =', app.getPath('userData'));
+console.log('songview:/js/preferences.js: default userData =', app.getPath('userData'));
 console.log('songview:/js/preferences.js: process.platform =', process.platform);
 
 let preferencesFile = 'preferences.json';
@@ -35,6 +36,15 @@ else {
 }
 console.log('songview:/js/preferences.js: preferencesFile =', preferencesFile);
 
+//const displays = screen.getAllDisplays()
+//console.log('songview:/js/preferences.js: DISPLAYS =', displays);
+
+//const externalDisplay = displays.find((display) => {
+//  return display.bounds.x !== 0 || display.bounds.y !== 0
+//  //return display.bounds;
+//})
+//console.log('songview:/js/preferences.js: EXTERNAL DISPLAY =', externalDisplay);
+
 preferences = new ElectronPreferences({
   /**
    * Where should preferences be saved?
@@ -42,6 +52,7 @@ preferences = new ElectronPreferences({
    */
   'dataStore': preferencesFile,
   'defaults': {
+    'displays': [],
     'collections': [], //preferenceData.collections,
     'songlist': [],
   },
@@ -130,12 +141,21 @@ else {
   console.log('songview:/js/preferences.js: FOUND preferenceData =', preferenceData);
   console.log('songview:/js/preferences.js: COLLECTIONS =', preferenceData.collections);
 
+console.log('songview:/js/preferences.js: COLLECTIONS LENGTH =', preferenceData.collections.length);
+
   // If there are prefered/saved attributes capture them here.
-  if (preferenceData.collections !== undefined && preferenceData.collections.length > 0) {
+  if (preferenceData && preferenceData.collections.length > 0) {
+console.log('songview:/js/preferences.js: FOUND COLLECTIONS =', collections);
     const dirTree = require("directory-tree");
     songlist = dirTree(preferenceData.collections[0]);
     //console.log('songview:/js/preferences.js: SONGLIST =', songlist)
     console.log('songview:/js/preferences.js: GOT SONGLIST!');
+  }
+  else {
+    // We neeed to set our user preferences.
+console.log('songview:/js/preferences.js: NEED PREFERENCES DIALOG.');
+//    preferences.show();
+//    ipcRenderer.send('synchronous-message', 'edit-preferences')
   }
 
   if (preferenceData.windowBounds !== undefined) {
