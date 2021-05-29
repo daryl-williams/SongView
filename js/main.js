@@ -17,6 +17,8 @@ const template = require('./menu-template.js').template;
 //console.log('songview:/js/main.js:dialog.showOpenDialog(): main menu template =', template);
 
 let mainWindow; //Do this so that the window object doesn't get GC'd.
+let preferences;
+let preference_data = {};
 
 // Setup Hot reload.
 //if (env === 'development') {
@@ -137,17 +139,40 @@ console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
 //  });
 
   ipcMain.on("toMain", (event, request) => {
-    console.log('songview:/js/main.js:ipcMain.on(toMain): received request =', request);
+//    request = request.trim();
+    console.log('songview:/js/main.js:ipcMain.on(toMain): received request = >' + request + '<');
     //console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
+console.log('songview:/js/main.js:ipcMain.on(toMain): !!! PREFERENCES =', preferences);
 
     // Parse the request
-    if (request === 'sendPreferences' && preference_data != undefined && preference_data.collections !== undefined && preference_data.collections.length > 0) {
-      // Get the first songlist and send it to the songview.js render process.
-      const dirTree = require("directory-tree");
-      const songlist = dirTree(preference_data.collections[0]);
-      preference_data.songlist = songlist;
-      // Send result back to renderer process
-      mainWindow.webContents.send("fromMain", preference_data);
+    if (request === 'sendPreferences') {
+
+console.log('songview:/js/main.js:ipcMain.on(toMain): ### PREFERENCES =', preferences);
+//console.log('songview:/js/main.js:ipcMain.on(toMain): ### COLLECTIONS =', preferences.collections);
+//console.log('songview:/js/main.js:ipcMain.on(toMain): ### LENGTH =', typeof preferences.collections.length);
+
+      let collections = preferences.value('collections');
+      console.log('songview:/js/main.js: >>>>> COLLECTIONS =', collections);
+
+      if (collections && collections.folder && collections.folder !== '') {
+        console.log('songview:/js/main.js:ipcMain.on(toMain): Collections is defined.');
+        // Get the first songlist and send it to the songview.js render process.
+        const dirTree = require("directory-tree");
+        const songlist = dirTree(collections.folder);
+//console.log('songview:/js/main.js:ipcMain.on(toMain): SONG_LIST =', songlist);
+        preference_data.collections = collections.folder;
+        preference_data.songlist = songlist;
+        // Send result back to renderer process
+        mainWindow.webContents.send("fromMain", preference_data);
+      }
+      else {
+        // Collections is undefined, popup the preferences window.
+        console.log('songview:/js/main.js:ipcMain.on(toMain): Collections is undefined, popup the preferences window.');
+        preferences.show();
+console.log('songview:/js/main.js:ipcMain.on(toMain): @@@@PREFERENCES =', preferences);
+        // Save a value within the preferences data store
+        preferences.value('lms_root', preferences.options.lms_root);
+      }
     }
     else if (request.substring(0, 9) === 'open-song') {
       // Get the first song and launch it in the default browser.
@@ -260,24 +285,29 @@ console.log('songview:/js/main.js: PREFERENCES directory =', userDataPath);
   }
 */
 
-  const preferences = require('./preferences.js');
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+
+  preferences = require('./preferences.js');
 console.log('songview:/js/main.js: >>> PREFERENCES =', preferences);
 //console.log('songview:/js/main.js: >>> DISPLAYS =', preferences.options.defaults.displays);
+
+  // Subscribing to preference changes.
+  preferences.on('save', (preferences) => {
+    console.log('songview:/js/main.js: ' + `Preferences were saved.`, JSON.stringify(preferences, null, 4));
+  });
 
   const songlist = preferences.value('songlist');
   //console.log('songview:/js/main.js: SONGLIST =', songlist);
 
   collections = preferences.value('collections');
-  //console.log('songview:/js/main.js: collections =', collections);
+  console.log('songview:/js/main.js: >>>>> collections =', collections);
 
   //const notes = preferences.value('notes');
   //console.log('songview:/js/main.js: notes =', notes);
 
   // Create the main window.
   createWindow();
-
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
 });
 
 app.on('window-all-closed', () => {

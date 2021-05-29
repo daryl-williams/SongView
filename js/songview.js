@@ -11,7 +11,7 @@ var songlist;
 
 window.onload = function() {
   // Ask the main process for our user preferences.
-  window.api.send("toMain", "sendPreferences");
+  window.api.send('toMain', 'sendPreferences');
 
 /*
   if (document.getElementById('ul-songlist') !== null) {
@@ -29,14 +29,17 @@ window.onload = function() {
       console.log('songview:/js/songview.js:window.onload(): received data from main process, data =', data);
       if (data !== undefined) {
         console.log('songview:/js/songview.js:window.onload(): DATA =', data);
-        const song_collection = data.collections;
+        const song_collection = data;
         console.log('SONG_COLLECTION =', song_collection);
-        for (let i=0, len=song_collection.length; i<len; i++) {
-          console.log('SONG_COLLECTION['+i+'] =', song_collection[i]);
+//        for (let i=0, len=song_collection.length; i<len; i++) {
+//          console.log('SONG_COLLECTION['+i+'] =', song_collection[i]);
           let option = document.createElement('option');
-          option.text = song_collection[i].substring(song_collection[i].lastIndexOf('/')+1);
+          let collection_name = song_collection; //[i].folder;
+          console.log('COLLECTION_NAME =', collection_name);
+          //option.text = song_collection[i].path.substring(song_collection[i].path.lastIndexOf('/')+1);
+          option.text = collection_name;
           document.getElementById('song-collections').add(option);
-        }
+//        }
 
         const songlist = data.songlist.children;
         //console.log('songview:/js/songview.js:window.onload(): SONGLIST =', songlist);

@@ -5,7 +5,7 @@
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const { app } = require('electron');
+const { app, screen } = require('electron');
 const ElectronPreferences = require('electron-preferences');
 
 //const electron = require('electron');
@@ -36,14 +36,29 @@ else {
 }
 console.log('songview:/js/preferences.js: preferencesFile =', preferencesFile);
 
-//const displays = screen.getAllDisplays()
-//console.log('songview:/js/preferences.js: DISPLAYS =', displays);
+// Get our display information.
+const displays = screen.getAllDisplays()
+console.log('songview:/js/preferences.js: DISPLAYS =', displays);
 
 //const externalDisplay = displays.find((display) => {
+//  console.log('songview:/js/preferences.js: ____DISPLAY =', display);
 //  return display.bounds.x !== 0 || display.bounds.y !== 0
 //  //return display.bounds;
 //})
 //console.log('songview:/js/preferences.js: EXTERNAL DISPLAY =', externalDisplay);
+
+let display_list = [];
+for (let i=0, len=displays.length; i<len; i++) {
+  let ndx = i + 1;
+  //let parms = '{"label": "Display #' + ndx + '", "value": "width ' + displays[i].bounds.width + ', height: ' + displays[i].bounds.height + '"}';
+  let parms = '{"label": "Display #' + ndx + '", "value": "width ' + displays[i].bounds.width + ', height: ' + displays[i].bounds.height + '"}';
+  console.log('songview:/js/preferences.js: PARMS =', parms);
+  let json = JSON.parse(parms);
+  console.log('songview:/js/preferences.js: JSON =', json);
+  display_list.push(json);
+}
+console.log('songview:/js/preferences.js: DISPLAY_LIST =', display_list);
+
 
 preferences = new ElectronPreferences({
   /**
@@ -53,41 +68,31 @@ preferences = new ElectronPreferences({
   'dataStore': preferencesFile,
   'defaults': {
     'displays': [],
-    'collections': [], //preferenceData.collections,
+    'collections': {
+      'folder': '',
+    },
+    'lms_root': {
+      'folder': '',
+    },
     'songlist': [],
   },
   'sections': [
     {
-      'id': 'about',
-      'label': 'About You',
-      /**
-       * See the list of available icons below.
-       */
-       'icon': 'single-01',
+      'id': 'lms_root',
+      'label': 'LMS_ROOT',
+       'icon': 'folder-15',
        'form': {
          'groups': [
-         {
-           /**
-            * Group heading is optional.
-            */
-            'label': 'About You',
+	  {
+	  'label': 'LMS Binaries',
             'fields': [
               {
-                'label': 'First Name',
-                'key': 'first_name',
-                'type': 'text',
-                /**
-                 * Optional text to be displayed beneath the field.
-                 */
-                 'help': 'What is your first name?'
-               },
-               {
-                 'label': 'Last Name',
-                 'key': 'last_name',
-                 'type': 'text',
-                 'help': 'What is your last name?'
-               },
-            ]
+                'label': 'LMS Binaries',
+                'key': 'folder',
+                'type': 'directory',
+                'help': 'Where are the LMS binary applications?'
+              }
+	    ]
           }
         ]
       }
@@ -95,17 +100,46 @@ preferences = new ElectronPreferences({
     {
       'id': 'collections',
       'label': 'Song Collections',
-       'icon': 'single-01',
+       'icon': 'folder-15',
        'form': {
          'groups': [
 	  {
 	  'label': 'Collections',
             'fields': [
               {
-                'label': 'First Name',
-                'key': 'first_name',
-                'type': 'text',
-                'help': 'What is your first name?'
+                'label': 'Select Song Collection(s)',
+                'key': 'folder',
+                'type': 'directory',
+                'properties': 'multiSelections',
+                'help': 'Pick one or more folders containing your songs'
+              }
+	    ]
+          }
+        ]
+      }
+    },
+    {
+      'id': 'displays',
+      'label': 'Displays',
+       'icon': 'image',
+       'form': {
+         'groups': [
+	  {
+	  'label': 'Displays',
+            'fields': [
+              {
+                'label': 'Select Song Display Monitor',
+                'key': 'song-display',
+                'type': 'radio',
+                'options': display_list,
+                'help': 'Select the monitor to use for displaying the application'
+              },
+              {
+                'label': 'Select Song Display Monitor',
+                'key': 'application-display',
+                'type': 'radio',
+                'options': display_list,
+                'help': 'Select the monitor to use for displaying the application'
               }
 	    ]
           }
