@@ -3,6 +3,7 @@
  *
  * File: main.js
  * Author: Daryl Williams
+ * Copyright (c) 2020 Daryl Williams
  */
 
 const env = process.env.NODE_ENV || 'development';
