@@ -110,36 +110,39 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
   mainWindow.loadFile('index.html')
   mainWindow.webContents.openDevTools();
 
-  let launchSong = (songfile) => {
-console.log('songview:/js/main.js:launchSong(): launched songfile =', songfile);
-console.log('songview:/js/main.js:createWindow(): HERE >>> preference_data =', preference_data.lms_bin)
+  let launchSong = (songfile, preferences) => {
+    //console.log('songview:/js/main.js:launchSong(): launched songfile =', songfile);
+    ////console.log('songview:/js/main.js:createWindow(): HERE >>> preference_data =', preference_data.lms_bin)
+    //console.log('songview:/js/main.js:createWindow(): HERE >>> preference_data =', preference_data)
+    //console.log('songview:/js/main.js:launchSong(): >> LMS_ROOT =', preference_data.lms_root);
+
+    process.env.LMS_ROOT = preference_data.lms_root;
+    process.env.LMS_BROWSER_PATH = '/Applications/Opt/Firefox.app/Contents/MacOS/firefox';
+    process.env.LMS_SCREEN_HEIGHT = 720;
+    process.env.LMS_SCREEN_WIDTH = 1280;
+    process.env.PATH = preference_data.lms_root + '/bin:' + process.env.PATH;
+
+    //console.log('songview:/js/main.js:launchSong(): >> PROCESS.ENV =', process.env);
 
     //let cmd = preference_data.lms_bin + '/' + 'dp' ;// + ' ' + songfile;
-    let cmd = preference_data.lms_bin + '/' + 'dp' + ' ' + songfile;
-console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
+    let cmd = preference_data.lms_root + '/bin/dp ' + songfile;
+    console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
 
-    //shell.openExternal(url);
-    exec(cmd, (error, data, getter) => {
-      if(error){
-        console.log("error", error.message);
+    // Open the song file in the default browser.
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`songview:/js/main.js:launchSong(): ERROR: ${error.message}`);
         return;
       }
-      if (getter){
-        console.log("GETTER cmd =", cmd, ', data = >>>' + data + '<<<');
+      if (stderr) {
+        console.error(`songview:/js/main.js:launchSong(): STDERR: ${stderr}`);
         return;
       }
-      console.log("data", data);
+      console.log(`songview:/js/main.js:launchSong(): STDOUT:\n${stdout}`);
     });
   };
 
-  // Interprocess communicartion between main process and renderer process.
-//  ipcMain.on('asynchronous-message', (event, arg) => {
-//    console.log('songview:/js/main.js:dialog.showOpenDialog(): arg =', arg);
-//    event.reply('asynchronous-reply', 'pong')
-//  });
-
   ipcMain.on("toMain", (event, request) => {
-//    request = request.trim();
     console.log('songview:/js/main.js:ipcMain.on(toMain): received request = >' + request + '<');
     //console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
 console.log('songview:/js/main.js:ipcMain.on(toMain): !!! PREFERENCES =', preferences);
@@ -151,17 +154,22 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): ### PREFERENCES =', prefer
 //console.log('songview:/js/main.js:ipcMain.on(toMain): ### COLLECTIONS =', preferences.collections);
 //console.log('songview:/js/main.js:ipcMain.on(toMain): ### LENGTH =', typeof preferences.collections.length);
 
+      let lms_root = preferences.value('lms_root');
+      console.log('songview:/js/main.js: >>>>> LMS_ROOT =', lms_root);
+
       let collections = preferences.value('collections');
       console.log('songview:/js/main.js: >>>>> COLLECTIONS =', collections);
+
+      const dirTree = require("directory-tree");
+      const songlist = dirTree(collections.folder);
+
+      preference_data.songlist = songlist;
+      preference_data.lms_root = lms_root.folder;
+      preference_data.collections = collections.folder;
 
       if (collections && collections.folder && collections.folder !== '') {
         console.log('songview:/js/main.js:ipcMain.on(toMain): Collections is defined.');
         // Get the first songlist and send it to the songview.js render process.
-        const dirTree = require("directory-tree");
-        const songlist = dirTree(collections.folder);
-//console.log('songview:/js/main.js:ipcMain.on(toMain): SONG_LIST =', songlist);
-        preference_data.collections = collections.folder;
-        preference_data.songlist = songlist;
         // Send result back to renderer process
         mainWindow.webContents.send("fromMain", preference_data);
       }
@@ -179,10 +187,10 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): @@@@PREFERENCES =', prefer
       let arr = request.split(':');
       let songname = arr[1].trim();
 console.log('songview:/js/main.js:ipcMain.on(toMain): songname =', songname);
-console.log('songview:/js/main.js:ipcMain.on(toMain): cwd =', process.cwd());
+console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
       let songfile = preference_data.songlist.path + '/' + songname;
       // Open the song in the browser.
-      launchSong(songfile);
+      launchSong(songfile, preferences);
     }
     else {
       console.log('songview:/js/main.js:ipcMain.on(toMain): UNKNOWN renderer REQUEST =', request);
