@@ -44,7 +44,7 @@ function createWindow () {
   // Create the application main window.
   mainWindow = new BrowserWindow({
     transparent: false,
-    icon: 'favicon.ico',
+    icon: './favicon.ico',
     title: 'FooBar',
     width: default_window_width,
     height: default_window_height,

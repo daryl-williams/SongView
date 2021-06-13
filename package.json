@@ -5,11 +5,20 @@
   "main": "./js/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "build --dir",
+    "dist": "build"
   },
-  "keywords": [],
-  "author": "Daryl Williams",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daryl-williams/SongView"
+  },
+  "author": {
+    "name": "Daryl Williams",
+    "email": "darylweblane.com"
+  },
   "license": "ISC",
+  "keywords": [],
   "devDependencies": {
     "electron": "^12.0.5",
     "electron-builder": "^22.10.5"
@@ -18,5 +27,49 @@
     "directory-tree": "^2.2.9",
     "electron-preferences": "^2.3.1",
     "electron-reload": "^1.5.0"
+  },
+  "build": {
+    "appId": "songview",
+    "productName": "SongView",
+    "copyright": "${author}",
+    "directories": {
+        "app": ".",
+        "output": "dist",
+        "buildResources": "build"
+    },
+    "dmg": {
+      "background": null,
+      "backgroundColor": "#ffffff",
+      "window": {
+        "width": "400",
+        "height": "300"
+      },
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app.category.application"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "NSIS",
+      "icon": "build/icon.ico"
+    }
   }
 }
