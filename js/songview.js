@@ -10,14 +10,29 @@ sv.collections = [];
 var songlist;
 
 window.onload = function() {
-  // Ask the main process for our user preferences.
-  window.api.send('toMain', 'sendPreferences');
+
+//  const inputElement = document.getElementById("browser-input");
+//  inputElement.addEventListener("change", function handleFiles() {
+//    const filelist = this.files; /* now you can work with the file list */
+//    console.log("songview:/js/preload.js: FILELIST =", filelist);
+//  }, false);
 
 /*
+  if (document.getElementById('ul-preferences') !== null) {
+    console.log('songview:/js/songview.js:window.onload(): FOUND ul-preferences =', document.getElementById('ul-preferences'));
+    document.getElementById('ul-preferences').addEventListener('click', (event) => {
+      console.log('songview:/js/songview.js:window.onload(): CLICK ul-preference =', event.target.innerText);
+      window.api.send("toMain", "get-preference: " + event.target.innerText);
+
+      return;
+    });
+  }
+
   if (document.getElementById('ul-songlist') !== null) {
     console.log('songview:/js/songview.js:window.onload(): FOUND ul-songlist =', document.getElementById('ul-songlist'));
     document.getElementById('ul-songlist').addEventListener('click', (event) => {
       console.log('songview:/js/songview.js:window.onload(): CLICK ul-songlist =', document.getElementById('ul-songlist'));
+      return;
     });
   }
 */
@@ -73,5 +88,7 @@ window.onload = function() {
     });
   }
 
+  // Ask the main process for our user preferences.
+  //window.api.send('toMain', 'sendPreferences');
 }
 

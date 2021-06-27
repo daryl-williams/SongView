@@ -6,8 +6,8 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pack": "build --dir",
-    "dist": "build"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -33,10 +33,19 @@
     "productName": "SongView",
     "copyright": "${author}",
     "directories": {
-        "app": ".",
-        "output": "dist",
-        "buildResources": "build"
+      "app": ".",
+      "output": "dist",
+      "buildResources": "build"
     },
+    "files": [
+      "/build/images/logo-1024x1024.png"
+    ],
+    "extraFiles": [
+      {
+        "from": "./images/logo-1024x1024.png",
+        "to": "."
+      }
+    ],
     "dmg": {
       "background": null,
       "backgroundColor": "#ffffff",
@@ -58,8 +67,8 @@
       ]
     },
     "mac": {
-      "target": "dmg",
-      "category": "public.app.category.application"
+      "target": "zip",
+      "category": "public.app.category.entertainment"
     },
     "linux": {
       "target": [

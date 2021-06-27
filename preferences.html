@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-elem 'self'">
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <meta name="author" content="Daryl Williams" />
+  <meta name="copyright" content="Copyright &copy; Daryl Williams, 2021" />
+  <meta name="keywords" content="transpose, song, music, chords, guitar, old key, new key, modulate, your chords, classic country, lyrics, lyric sheet" />
+  <meta name="description" content="GUI front end for LMS song display application" />
+
+  <title>SongView Preferences</title>
+
+  <link rel="stylesheet" type="text/css" href="./css/preferences.css">
+</head>
+
+<body>
+
+  <div id="preferences-container">
+    <div id="left-panel">
+      <ul id="ul-preferences">
+        <li>LMS Root</li>
+        <li>Browser</li>
+        <li>Displays</li>
+        <li>Collections</li>
+        <li>Window Location</li>
+      </ul>
+    </div>
+    <div id="right-panel">
+      <div id="right-top-panel"></div>
+      <div id="right-bottom-panel"><input id="save-preferences-button" type="submit" value="Save"></div>
+    </div>
+  </div> <!-- end of class=container -->
+
+  <script type="module" src="./js/preferences-window.js"></script>
+
+</body>
+</html>
+

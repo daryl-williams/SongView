@@ -1,0 +1,154 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+a { text-decoration: none; }
+
+#preferences-container {
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: 25% 75%;
+  grid-template-areas:
+    "left-panel right_panel"
+    "left-panel right-panel";
+  height: 100vh;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+#left-panel {
+  grid-area: left-panel;
+  text-align: center;
+  height: 100vh;
+  padding: 1em;
+  margin: 0px;
+  background-color: #ccc;
+  border: 1px ridge purple;
+}
+
+#right-panel {
+  grid-area: right-panel;
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  /*
+  text-align: right;
+  height: 80vh;
+  margin: 0px;
+  border: 1px ridge #ddd;
+  padding: 1em;
+  */
+  height: inherit;
+  background-color: #fff;
+}
+
+#right-top-panel {
+  flex-basis: 98%;
+  text-align: left;
+  padding: 1em;
+  background-color: #fff;
+}
+
+#right-bottom-panel {
+  flex-basis: 7%;
+  text-align: right;
+  background-color: #fff;
+}
+
+#save-preferences-button {
+  margin: .5em;
+  margin-right: 2em;
+  margin-bottom: 1em;
+}
+
+#preference-instructions {
+  margin-bottom: 2em;
+}
+
+#ul-preferences {
+  background-color: #0c0;
+  list-style-type: none;
+  text-align: left;
+  padding: 0em;
+  margin: .25em;
+}
+
+#ul-preferences li {
+  background-color: #ccc;
+  padding: .25em;
+  padding-left: 1em;
+  border: thin solid grey;
+}
+
+#ul-preferences li:hover {
+  color: white;
+  background-color: grey;
+}
+
+#songlist-div {
+  grid-area: songlist-div;
+  /* height: calc(100vh - 2rem); */
+  height: 480px;
+  text-align: center;
+  background-color: #ff800d;
+  overflow-y: auto;
+  margin-right: .5em;
+  border-radius: 10px;
+  border: thin ridge #000;
+}
+
+#ul-songlist {
+  list-style-type: none;
+  text-align: left;
+  padding: 0em;
+  margin: .25em;
+}
+
+#ul-songlist li {
+  background-color: #ccc;
+  padding: .25em;
+  padding-left: 1em;
+  border: thin solid grey;
+}
+
+#ul-songlist li:hover {
+  color: white;
+  background-color: green;
+}
+
+#song-options {
+  grid-area: song-options;
+  height: 480px;
+  text-align: center;
+  background-color: #ff800d;
+  padding-left: .5em;
+  padding-right: .5em;
+  border-radius: 10px;
+  border: thin ridge #000;
+}
+
+#search {
+  grid-area: search;
+  margin-top: .5em;
+  border: 1px solid grey;
+}
+
+/*
+#songlist {
+  display: inline-block;
+}
+
+#song-options {
+  display: inline-block;
+}
+*/
+

@@ -2,7 +2,7 @@
  * preload.js
  */
 
-const { contextBridge, ipcRenderer } = require("electron");
+const { app, contextBridge, ipcRenderer } = require("electron");
 
 const {
   getCurrentWindow,
@@ -17,10 +17,26 @@ const {
 //window.isElectron = true
 //window.ipcRenderer = ipcRenderer
 
+app.on('ready', () => {
+
+/*
+session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+  callback({
+    responseHeaders: {
+      ...details.responseHeaders,
+      'Content-Security-Policy': ['default-src \'self\'']
+    }
+  })
+  });
+});
+*/
+
 contextBridge.exposeInMainWorld("api", {
+  //prefer: (channel, data) => {
+  //},
   send: (channel, data) => {
     // whitelist channels
-    let validChannels = ["toMain"];
+    let validChannels = ["toMain", "toPrefs"];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     }
@@ -34,7 +50,7 @@ contextBridge.exposeInMainWorld("api", {
   }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+process.once('loaded', () => {
 
   window.getCurrentWindow = getCurrentWindow;
   window.openMenu = openMenu;
@@ -44,24 +60,23 @@ window.addEventListener('DOMContentLoaded', () => {
   window.isWindowMaximized = isWindowMaximized;
   window.closeWindow = closeWindow;
 
-  if(process.env.NODE_ENV == 'development') {
-    // Code for Development Mode
-    console.log("process.env.NODE_ENV =", process.env.NODE_ENV);
-  }
-  else {
-    // Code for Testing Mode
-    console.log("process.env.NODE_ENV =", process.env.NODE_ENV);
-  }
+/*
+  window.addEventListener('message', evt => {
+    if (evt.data.type === 'select-dirs') {
+      ipcRenderer.send('select-dirs')
+    }
+  });
+*/
 
-//  if (document.getElementById('song-collections') !== null) {
-//    // Check to make sure we have at least one song collection.
-//    // If it is not we set process.env.SONG_COLLECTION to an empty string
-//    // which is used in main.js to determine whether to initialize a collection.
-//    let number_of_collections = document.getElementById("song-collections").options.length;
-//    if (number_of_collections === 0) {
-//      process.env.SONG_COLLECTION = "";
-//    }
-//  }
-
+  window.addEventListener('DOMContentLoaded', () => {
+    if(process.env.NODE_ENV == 'development') {
+      // Code for Development Mode
+      console.log("process.env.NODE_ENV =", process.env.NODE_ENV);
+    }
+    else {
+      // Code for Testing Mode
+      console.log("process.env.NODE_ENV =", process.env.NODE_ENV);
+    }
+  });
 });
 
