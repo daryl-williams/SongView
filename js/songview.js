@@ -1,8 +1,8 @@
 /*
  * songview.js
- */
 
-'use strict';
+//'use strict';
+ */
 
 var sv = sv || {};
 sv.collections = [];
@@ -40,29 +40,30 @@ window.onload = function() {
   if (document.getElementById('song-collections') !== null) {
     console.log('songview:/js/songview.js:window.onload(): found song-collections div =', document.getElementById('song-collections'));
 
-    window.api.receive("fromMain", (data) => {
-      console.log('songview:/js/songview.js:window.onload(): received data from main process, data =', data);
-      if (data !== undefined) {
+    window.api.receive("fromMain", (dataStr) => {
+      //console.log('songview:/js/songview.js:window.onload(): received data from main process, data =', data);
+      if (dataStr !== undefined) {
+        let data = JSON.parse(dataStr);
         console.log('songview:/js/songview.js:window.onload(): DATA =', data);
-        const song_collection = data;
+        const song_collection = data.Collections;
         console.log('SONG_COLLECTION =', song_collection);
 //        for (let i=0, len=song_collection.length; i<len; i++) {
 //          console.log('SONG_COLLECTION['+i+'] =', song_collection[i]);
           let option = document.createElement('option');
-          let collection_name = song_collection; //[i].folder;
+          let collection_name = song_collection[0]; //[i].folder;
           console.log('COLLECTION_NAME =', collection_name);
           //option.text = song_collection[i].path.substring(song_collection[i].path.lastIndexOf('/')+1);
           option.text = collection_name;
           document.getElementById('song-collections').add(option);
 //        }
 
-        const songlist = data.songlist.children;
+        const songlist = data.SongList.children;
         //console.log('songview:/js/songview.js:window.onload(): SONGLIST =', songlist);
 
         let songHandler = (event) => {
           let songname = event.target.getAttribute('data-filename');
           console.log('songview:/js/songview.js:window.onload(): SONG SELECTED =', songname);
-          window.api.send("toMain", "open-song: " + songname);
+          window.api.send("toMain", "open-song:" + songname);
         }
 
         if (document.getElementById('songlist-div') !== null) {
@@ -89,6 +90,7 @@ window.onload = function() {
   }
 
   // Ask the main process for our user preferences.
-  //window.api.send('toMain', 'sendPreferences');
+  window.api.send('toMain', 'sendPreferences');
+console.log('songview:/js/songview.js:window.onload(): SENTO LOAD_PREFERENCES REQUEST');
 }
 

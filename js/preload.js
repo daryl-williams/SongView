@@ -17,38 +17,28 @@ const {
 //window.isElectron = true
 //window.ipcRenderer = ipcRenderer
 
-app.on('ready', () => {
+//app.on('ready', () => {
+//
 
-/*
-session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-  callback({
-    responseHeaders: {
-      ...details.responseHeaders,
-      'Content-Security-Policy': ['default-src \'self\'']
+//window.ipcRenderer = require('electron').ipcRenderer;
+
+  contextBridge.exposeInMainWorld("api", {
+    send: (channel, data) => {
+      // whitelist channels
+      let validChannels = ["toMain", "toPrefs"];
+      if (validChannels.includes(channel)) {
+        ipcRenderer.send(channel, data);
+      }
+    },
+    receive: (channel, func) => {
+      let validChannels = ["fromMain", "fromPrefs"];
+      if (validChannels.includes(channel)) {
+        // Deliberately strip event as it includes `sender` 
+        ipcRenderer.on(channel, (event, ...args) => func(...args));
+      }
     }
-  })
   });
-});
-*/
-
-contextBridge.exposeInMainWorld("api", {
-  //prefer: (channel, data) => {
-  //},
-  send: (channel, data) => {
-    // whitelist channels
-    let validChannels = ["toMain", "toPrefs"];
-    if (validChannels.includes(channel)) {
-      ipcRenderer.send(channel, data);
-    }
-  },
-  receive: (channel, func) => {
-    let validChannels = ["fromMain"];
-    if (validChannels.includes(channel)) {
-      // Deliberately strip event as it includes `sender` 
-      ipcRenderer.on(channel, (event, ...args) => func(...args));
-    }
-  }
-});
+//});
 
 process.once('loaded', () => {
 

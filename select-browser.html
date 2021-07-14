@@ -1,0 +1,16 @@
+  <div id="preference-instructions">
+    Select the Browser to use for displaying songs.
+  </div>
+
+  <form id="preference-form">
+    <input type="hidden" id="preference-field" value="browser">
+    <input type="hidden" id="preference-key" value="Browser">
+    <input type="hidden" id="dialog-title" value="Song Browser">
+    <input type="hidden" id="dialog-message" value="Select the Browser to use to display songs">
+    <input type="hidden" id="dialog-property-type" value="openFile">
+    <span>
+      <label for="select-browser-button">Select Browser</label> <button type="button" onclick="javascript:displayFolderDialog();" id="select-browser-button" value="Select Browser">Choose Browser</button>
+    </span>
+    <span id="file-select-status">No Browser Selected</span>
+  </form>
+

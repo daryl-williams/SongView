@@ -3,7 +3,7 @@
  *
  * File: main.js
  * Author: Daryl Williams
- * Copyright (c) 2020 Daryl Williams
+ * Copyright (c) 2021 Daryl Williams
  */
 
 const env = process.env.NODE_ENV || 'development';
@@ -13,10 +13,10 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require("child_process");
 const { app, dialog, ipcMain, BrowserWindow, Menu, shell, screen } = require('electron');
-const Store = require('./store.js');
-const store = new Store();
 const template = require('./menu-template.js').template;
 //console.log('songview:/js/main.js:dialog.showOpenDialog(): main menu template =', template);
+//const Store = require('./store.js');
+//const store = new Store();
 
 let mainWindow; //Do this so that the window object doesn't get GC'd.
 let preferences;
@@ -114,26 +114,27 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
 
   // Open the Application Main Window.
   mainWindow.loadFile('index.html')
-  //mainWindow.webContents.openDevTools(); // Developer Tools
+  mainWindow.webContents.openDevTools(); // Developer Tools
 
   let launchSong = (songfile, preferences) => {
     //console.log('songview:/js/main.js:launchSong(): launched songfile =', songfile);
     console.log('songview:/js/main.js:launchSong(): >> PREFERENCES =', preferences)
     //console.log('songview:/js/main.js:launchSong(): >> LMS_ROOT =', preference_data.lms_root);
 
-    const browser = preferences.value('browser').text.substring(6);
+    //const browser = preferences.value('browser').text.substring(6);
+    const browser = preferences.Browser + '/Contents/MacOS/Safari'; //('browser').text.substring(6);
     console.log('songview:/js/main.js:launchSong(): >> BROWSER =', browser);
 
-    process.env.LMS_ROOT = preference_data.lms_root;
+    process.env.LMS_ROOT = preferences.lmsRoot;
     process.env.LMS_BROWSER_PATH = '/Applications/Opt/Firefox.app/Contents/MacOS/firefox' // browser; // '/Applications/Opt/Firefox.app/Contents/MacOS/firefox';
     process.env.LMS_SCREEN_HEIGHT = 720;
     process.env.LMS_SCREEN_WIDTH = 1280;
-    process.env.PATH = preference_data.lms_root + '/bin:' + process.env.PATH;
+    process.env.PATH = preferences.lmsRoot + '/bin:' + process.env.PATH;
 
     console.log('songview:/js/main.js:launchSong(): >> PROCESS.ENV.LMS_BROWSER_PATH =', process.env.LMS_BROWSER_PATH);
 
     //let cmd = preference_data.lms_bin + '/' + 'dp' ;// + ' ' + songfile;
-    let cmd = preference_data.lms_root + '/bin/dp ' + songfile;
+    let cmd = preferences.lmsRoot + '/bin/dp ' + songfile;
     console.log('songview:/js/main.js:createWindow(): CMD =', cmd)
 
     // Open the song file in the default browser.
@@ -151,8 +152,8 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
   };
 
   ipcMain.on("toMain", (event, request, target) => {
-    console.log('songview:/js/main.js:ipcMain.on(toMain): received request = >' + request + '<');
-    console.log('songview:/js/main.js:ipcMain.on(toMain): received target = >' + target + '<');
+    console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$%!@#$% received request = >' + request + '<');
+    //console.log('songview:/js/main.js:ipcMain.on(toMain): received target = >' + target + '<');
     //console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
 //console.log('songview:/js/main.js:ipcMain.on(toMain): !!! PREFERENCES =', preferences);
 
@@ -233,18 +234,19 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): ### PREFERENCES =', prefer
       preference_data.collections = preferences.collections;
       */
 
-console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$% pREFERENCES =', preferences.collections);
+console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$% pREFERENCES =', preferences);
 
-      if (preferences.collections && preferences.collections !== '') {
+      if (preferences.Collections && preferences.Collections !== '') {
         console.log('songview:/js/main.js:ipcMain.on(toMain): Collections is defined.');
         // Get the first songlist and send it to the songview.js render process.
         // Send result back to renderer process
-        mainWindow.webContents.send("fromMain", preference_data);
+        //mainWindow.webContents.send("fromMain", preference_data);
+        mainWindow.webContents.send("fromMain", JSON.stringify(preferences));
       }
       else {
         // Collections is undefined, popup the preferences window.
         console.log('songview:/js/main.js:ipcMain.on(toMain): Collections is undefined, popup the preferences window.');
-        preferences.show();
+//        preferences.show();
 //console.log('songview:/js/main.js:ipcMain.on(toMain): ->@@@@PREFERENCES =', preferences);
         // Save a value within the preferences data store
         //preferences.value('lms_root', preferences.options.lms_root);
@@ -257,9 +259,9 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$% pREFERENCES =', pref
       // Get the first song and launch it in the default browser.
       let arr = request.split(':');
       let songname = arr[1].trim();
-//console.log('songview:/js/main.js:ipcMain.on(toMain): songname =', songname);
-//console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
-      let songfile = preference_data.songlist.path + '/' + songname;
+console.log('songview:/js/main.js:ipcMain.on(toMain): songname =', songname);
+console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
+      let songfile = preferences.SongList.path + '/' + songname;
       // Open the song in the browser.
       launchSong(songfile, preferences);
     }
@@ -270,10 +272,10 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$% pREFERENCES =', pref
 };
 
 app.on('ready', () => {
-
+  // Initialize our application preferences.
+  console.log('songview:/js/main.js: >>> start INITIALIZING PREFERENCES =', preferences);
   preferences = require('./preferences.js');
-console.log('songview:/js/main.js: >>> PREFERENCES =', preferences);
-//console.log('songview:/js/main.js: >>> DISPLAYS =', preferences.options.defaults.displays);
+  console.log('songview:/js/main.js: >>> end INITIALIZED PREFERENCES =', preferences);
 
   let userDataPath;
   //console.log('songview:/js/main.js:ipcMain.on(ready): CWD =', process.cwd());
@@ -327,32 +329,32 @@ console.log('songview:/js/main.js: >>> PREFERENCES =', preferences);
   // Now read the data.
   let collections;
   let preference_data;
-  let createPreferencesFile = false;
+//  let createPreferencesFile = false;
 
+  // Check if the preference file exists.
   let res = fs.existsSync(preferences_file);
   if (res === true) {
     // The file exists.
+    console.log('songview:/js/main.js: >>>>> preferences_file exists =', preferences_file)
+    //preference_data = JSON.parse(fs.readFileSync(preferences_file));
+    //console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
+    console.log('songview:/js/main.js:createWindow(): PREFERENCES =', preferences)
+
+/*
+    //preferences.lmsRoot = preference_data.lms_root.folder;
+    preferences.lmsRoot = preference_data.lmsRoot;
+    preferences.Collections = preference_data.collections.folder;
+    preferences.Displays = preference_data.displays;
+    preferences.Browser = preference_data.browser.text;
 console.log('songview:/js/main.js: &&&&&& PREFERENCES =', preferences);
-    console.log('songview:/js/main.js: >>> preferences_file =', preferences_file)
-    preference_data = JSON.parse(fs.readFileSync(preferences_file));
-    console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
 
-    preferences.lms_root = preference_data.lms_root.folder;
-    preferences.collections = preference_data.collections.folder;
-    preferences.displays = preference_data.displays;
-    preferences.browser = preference_data.browser.text;
-console.log('songview:/js/main.js: &&&&&& PREFERENCES =', preferences);
-
-    // If there are prefered/saved attributes capture them here.
-    if (preference_data.dataStore !== undefined) {
-    }
-
-    if (preference_data.windowBounds !== undefined) {
+    if (preferences.WindowLocation !== undefined) {
       default_window_width = preference_data.windowBounds.width;
       default_window_height = preference_data.windowBounds.height;
       //console.log('songview:/js/main.js:createWindow(): Window location X =', default_window_width);
       //console.log('songview:/js/main.js:createWindow(): Window location Y =', default_window_height);
     }
+*/
   }
   else {
     console.log('songview:/js/main.js:fs.exists(preferences_file): does NOT EXIST.');
@@ -388,10 +390,10 @@ console.log('songview:/js/main.js: &&&&&& PREFERENCES =', preferences);
 //    console.log('songview:/js/main.js: ' + `Preferences were saved.`, JSON.stringify(preferences, null, 4));
 //  });
 
-  const songlist = preferences.value('songlist');
+//  const songlist = preferences.value('songlist');
   //console.log('songview:/js/main.js: SONGLIST =', songlist);
 
-  collections = preferences.value('collections');
+ // collections = preferences.value('collections');
   //console.log('songview:/js/main.js: >>>>> collections =', collections);
 
   //const notes = preferences.value('notes');

@@ -32,7 +32,7 @@ a { text-decoration: none; }
   padding: 1em;
   margin: 0px;
   background-color: #ccc;
-  border: 1px ridge purple;
+  border: 1px groove grey;
 }
 
 #right-panel {
@@ -75,6 +75,7 @@ a { text-decoration: none; }
 }
 
 #ul-preferences {
+  cursor: pointer;
   background-color: #0c0;
   list-style-type: none;
   text-align: left;
@@ -151,4 +152,9 @@ a { text-decoration: none; }
   display: inline-block;
 }
 */
+
+#file-select-status {
+  width: 20px;
+  overflow: auto;
+}
 

@@ -1,0 +1,15 @@
+  <div id="preference-instructions">
+    Choose one or more Song Collection Folders.
+  </div>
+
+  <form id="preference-form">
+    <input type="hidden" id="preference-field" value="collections">
+    <input type="hidden" id="preference-key" value="Collections">
+    <input type="hidden" id="dialog-title" value="Dialog Message Song Collections">
+    <input type="hidden" id="dialog-message" value="Dialog Message Select Song Collections">
+    <input type="hidden" id="dialog-property-type" value="openDirectory">
+
+    <span><label for="select-collections-button">Song Collections</label> <button type="button"  onclick="javascript:displayFolderDialog();" id="select-collections-button" value="Select Song Collections">Choose Song Collections</button></span>
+    <span id="file-select-status">No Folder Selected</span>
+  </form>
+

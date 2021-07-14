@@ -33,10 +33,12 @@ class Store {
     //console.log('songview:/js/store.js Store.constructor(): opts.defaults =', opts.defaults);
     //this.data = parseDataFile(this.path, opts.defaults);
     this.data = parseDataFile(this.path);
+    console.log('songview:/js/store.js Store.constructor(): this.data =', this.data);
   }
   
   // This will just return the property on the `data` object
   get(key) {
+    console.log('songview:/js/store.js get(key): key =', this.data.key);
     return this.data[key];
   }
   
@@ -48,6 +50,7 @@ class Store {
     // Also if we used an async API and our app was quit before the asynchronous write had a chance to complete,
     // we might lose that data. Note that in a real app, we would try/catch this.
     fs.writeFileSync(this.path, JSON.stringify(this.data));
+    console.log('songview:/js/store.js set(key): WRITING PREFERENCE DATA =', JSON.stringify(this.data));
   }
 }
 

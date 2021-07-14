@@ -1,0 +1,16 @@
+  <div id="preference-instructions">
+    Please select the LMS Folder. The LMS Root folder location is required because it contains the suite of executable programs that display the song in the browser.
+  </div>
+
+  <form id="preference-form">
+    <input type="hidden" id="preference-field" value="lmsroot">
+    <input type="hidden" id="preference-key" value="lmsRoot">
+    <input type="hidden" id="dialog-title" value="LMS Root">
+    <input type="hidden" id="dialog-property-type" value="openDirectory">
+    <input type="hidden" id="dialog-message" value="Please select the LMS Root Folder">
+    <span>
+      <label for="select-lmsroot-button">LMS Root</label> <button type="button" onclick="javascript:displayFolderDialog(this);" id="select-lmsroot-button" value="Select LMS Root Folder">Choose LMS Root Folder</button>
+    </span>
+    <span id="file-select-status">No Folder Selected</span>
+  </form>
+

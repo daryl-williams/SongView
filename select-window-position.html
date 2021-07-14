@@ -1,0 +1,18 @@
+  <div id="preference-instructions">
+    You can set the location of the Application Window's X and Y coordinates on the screen.
+  </div>
+
+  <form id="preference-form">
+    <input type="hidden" name="preference-field" value="window-position">
+    <input type="hidden" id="preference-key" value="window-position">
+
+    <div>
+      <strong>Application Window Top Left Position</strong><br /><br />
+      <div>
+        <label for="select-window-x-position">Top Left X Position</label> <input onblur="javascript:setWindowPosition(this);" type="number" id="window-x-position" placeholder="1024" value=""><br />
+        <label for="select-window-y-position">Top Left Y Position</label> <input onblur="javascript:setWindowPosition(this);" type="number" id="window-y-position" placeholder="600" value=""><br />
+
+      </div>
+    </div>
+  </form>
+

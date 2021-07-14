@@ -3,11 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-  <!--
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' './js/preferences-window.js';" />
-  -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-elem 'self'" />
   <meta name="author" content="Daryl Williams" />
   <meta name="copyright" content="Copyright &copy; Daryl Williams, 2021" />
   <meta name="keywords" content="transpose, song, music, chords, guitar, old key, new key, modulate, your chords, classic country, lyrics, lyric sheet" />
@@ -117,15 +113,15 @@
   </td>
   <td width="25%" colspan="1" align="center" valign="middle">
     <b>--- Chord Color ---</b><br> <select name="ChordFontColor">
-      <option style="color:Blue;"        value="Blue"        selected       > Blue
-      <option style="color:Black;"       value="Black"             > Black
-      <option style="color:Red;"         value="Red"                 > Red
-      <option style="color:Crimson;"     value="Crimson"         > Crimson
-      <option style="color:Green;"       value="Green"             > Green
-      <option style="color:ForestGreen;" value="ForestGreen" > Forest Green
-      <option style="color:Orange;"      value="Orange"           > Orange
-      <option style="color:OrangeRed;"   value="OrangeRed"     > Orange Red
-      <option style="color:Brown;"       value="Brown"             > Brown
+      <option class="blue"        value="Blue" selected > Blue
+      <option class="black"       value="Black"       > Black
+      <option class="red"         value="Red"         > Red
+      <option class="crimson"     value="Crimson"     > Crimson
+      <option class="green"       value="Green"       > Green
+      <option class="forestgreen" value="ForestGreen" > Forest Green
+      <option class="orange"      value="Orange"      > Orange
+      <option class="orangered"   value="OrangeRed"   > Orange Red
+      <option class="brown"       value="Brown"       > Brown
     </select>
   </td>
 </tr>
