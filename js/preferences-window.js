@@ -37,14 +37,15 @@ window.onload = function() {
 
   let preferencesStr = ipcRenderer.sendSync('getPreferences');
   preferences = JSON.parse(preferencesStr);
-  console.log('songview:/js/preferences-window.js: PREFERENCES =', preferences);
+  console.log('songview:/js/preferences-window.js: RECEIVED PREFERENCES =', preferences);
 
   if (document.getElementById('save-preferences-button') !== null) {
     //console.log('songview:/js/preferences-window.js:window.onload(): FOUND save-preferences-button =', document.getElementById('save-preferences-button'));
     document.getElementById('save-preferences-button').addEventListener('click', (event) => {
       console.log('songview:/js/preferences-window.js:window.onload(): CLICK save-preferences-button =', document.getElementById('save-preferences-button'));
       // Save Preferences and quit.
-      console.log('songview:/js/preferences-window.js:window.onload(): SENDING PREFERENCES =', preferences);
+      console.log('songview:/js/preferences-window.js:window.onload(): SAVING PREFERENCES =', preferences);
+      //let saved = ipcRenderer.sendSync('savePreferences', preferences);
       let saved = ipcRenderer.sendSync('savePreferences', preferences);
       console.log('songview:/js/preferences-window.js:window.onload(): SAVED =', saved);
       return;

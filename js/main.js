@@ -18,7 +18,7 @@ const template = require('./menu-template.js').template;
 //const Store = require('./store.js');
 //const store = new Store();
 
-let mainWindow; //Do this so that the window object doesn't get GC'd.
+let MainWindow; //Do this so that the window object doesn't get GC'd.
 let preferences;
 let preference_data = {};
 
@@ -47,7 +47,7 @@ function createWindow() {
 
   let default_window_width = 1024, default_window_height = 600;
   // Create the application main window.
-  mainWindow = new BrowserWindow({
+  MainWindow = new BrowserWindow({
     transparent: false,
     title: scriptname,
     icon: __dirname + '/app/images/favicon-1.png',
@@ -60,13 +60,35 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     },
     frame: true
-  })
+  });
 
-  // This is the event handler for the mainWindow resize event.
-  mainWindow.on('resize', () => {
+//  MainWindow.webContents.send("sendMyProps", preferences);
+//  console.log('songview:/js/main.js:createWindow(): >>> SENT PREFERENCES =', preferences)
+
+  //MainWindow.webContents.send("deliverPreferences", preferences);
+//  const { MessageChannelMain } = require('electron');
+//  const { port1, port2 } = new MessageChannelMain();
+//  MainWindow.webContents.postMessage('port', null, [port2]);
+//  port1.postMessage({ some: 'message' })
+
+    ipcMain.on('deliverPreferences', (event, data) => {
+console.log('songview:/js/main.js:createWindow(): >>> sendProps =', data)
+      event.reply('deliverPreferences', JSON.stringify(preferences));
+    });
+
+//  MainWindow.webContents.send("sendPreferences", preferences);
+//  console.log('songview:/js/main.js:createWindow(): SENT PREFERENCES =', preferences)
+//  ipcMain.handle('deliverPreferences', async (event, arg) => {
+//    // do stuff
+//    await awaitableProcess();
+//    return "foo";
+//  }
+
+  // This is the event handler for the MainWindow resize event.
+  MainWindow.on('resize', () => {
     // The event doesn't pass us the window size, so we call the `getBounds` method which returns an object with
     // the height, width, and x and y coordinates.
-    let { width, height } = mainWindow.getBounds();
+    let { width, height } = MainWindow.getBounds();
     // Now save the new dimension in the preferences file.
     store.set('windowBounds', { width, height });
   });
@@ -76,7 +98,7 @@ function createWindow() {
 //preferences.show();
 
     // The file does not exists, so open a dialog window to select song collection directory.
-    dialog.showOpenDialog(mainWindow, {
+    dialog.showOpenDialog(MainWindow, {
       title: 'Preferences',
       message: 'Please select at least one SONG COLLECTION',
       properties: ['openDirectory', 'multiSelections']
@@ -113,8 +135,8 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
 */
 
   // Open the Application Main Window.
-  mainWindow.loadFile('index.html')
-  mainWindow.webContents.openDevTools(); // Developer Tools
+  MainWindow.loadFile('index.html')
+  MainWindow.webContents.openDevTools(); // Developer Tools
 
   let launchSong = (songfile, preferences) => {
     //console.log('songview:/js/main.js:launchSong(): launched songfile =', songfile);
@@ -152,7 +174,7 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
   };
 
   ipcMain.on("toMain", (event, request, target) => {
-    console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$%!@#$% received request = >' + request + '<');
+    console.log('songview:/js/main.js:ipcMain.on(toMain): RECEIVED request = >' + request + '<');
     //console.log('songview:/js/main.js:ipcMain.on(toMain): received target = >' + target + '<');
     //console.log('songview:/js/main.js:ipcMain.on(toMain): preference_data =', preference_data);
 //console.log('songview:/js/main.js:ipcMain.on(toMain): !!! PREFERENCES =', preferences);
@@ -161,7 +183,7 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
 /*
     if (request === 'display-preference-dialog') {
       // The file does not exists, so open a dialog window to select song collection directory.
-      dialog.showOpenDialog(mainWindow, {
+      dialog.showOpenDialog(MainWindow, {
         title: 'Preferences',
         message: 'Please select at least one SONG COLLECTION',
         properties: ['openDirectory', 'multiSelections']
@@ -197,6 +219,7 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
     }
 */
     if (request.substring(0, 14) === 'get-preference') {
+      // This request comes from the ./js/songview.js once the ./index.html page has loaded.
       console.log('songview:/js/main.js:ipcMain.on(toMain): action = ZZZZZ get-preference, PREFERENCE =', request);
       target_file = './' + target.toLowerCase().replace(' ', '-') + '.html';
       console.log('songview:/js/main.js:ipcMain.on(toMain): action = ZZZZZ get-preference, TARGET =', target_file);
@@ -205,43 +228,39 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
       console.log('songview:/js/main.js:ipcMain.on(toMain): action = SENT HTML =', html);
     }
     else if (request === 'savePreferences') {
-      console.log('songview:/js/main.js:ipcMain.on(toMain): action = savePreferences, PREFERENCES =', preferences);
+      console.log('songview:/js/main.js:ipcMain.on(toMain): ACTION = savePreferences, PREFERENCES =', preferences);
     }
     else if (request === 'sendPreferences') {
 
-console.log('songview:/js/main.js:ipcMain.on(toMain): ### PREFERENCES =', preferences);
-//console.log('songview:/js/main.js:ipcMain.on(toMain): ### COLLECTIONS =', preferences.collections);
-//console.log('songview:/js/main.js:ipcMain.on(toMain): ### LENGTH =', typeof preferences.collections.length);
+      console.log('songview:/js/main.js:ipcMain.on(toMain): sendPreferences: >>> SENDING PREFERENCES =', preferences);
 
-      /*
-      let lms_root = preferences.value('lms_root');
-      console.log('songview:/js/main.js: >>>>> LMS_ROOT =', lms_root);
+      //let lms_root = preferences.lmsRoot;
+      console.log('songview:/js/main.js: >>>>> LMS_ROOT =', preferences.lmsRoot);
 
-      let collections = preferences.value('collections');
-      console.log('songview:/js/main.js: >>>>> COLLECTIONS =', collections);
+      //let collections = preferences.Collections[0];
+      //console.log('songview:/js/main.js: >>>>> TYPE COLLECTIONS =', typeof collections);
+      console.log('songview:/js/main.js: >>>>> TYPE COLLECTIONS =', typeof preferences.Collections[0]);
 
-      const dirTree = require("directory-tree");
-      //const songlist = dirTree(collections.folder);
-      const songlist = dirTree(preferences.collections);
-      console.log('songview:/js/main.js: >>>>> SONGLIST =', songlist);
+//      const dirTree = require("directory-tree");
+      //const songlist = dirTree(preferences.folder);
+//      const songlist = dirTree(preferences.Collections[0]);
+//      console.log('songview:/js/main.js: >>>>> SONGLIST =', songlist);
 
-      preferences.songlist = songlist.children;
+      //preferences.songlist = songlist.children;
+      //preference_data.songlist = songlist;
+      //preference_data.lms_root = preferences.lms_root;
+      //preference_data.collections = preferences.collections;
 
-      preference_data.songlist = songlist;
-      //preference_data.lms_root = lms_root.folder;
-      preference_data.lms_root = preferences.lms_root;
-      //preference_data.collections = collections.folder;
-      preference_data.collections = preferences.collections;
-      */
-
-console.log('songview:/js/main.js:ipcMain.on(toMain): !@#$% pREFERENCES =', preferences);
-
-      if (preferences.Collections && preferences.Collections !== '') {
-        console.log('songview:/js/main.js:ipcMain.on(toMain): Collections is defined.');
+      if (preferences.Collections[0] && preferences.Collections[0] !== '') {
+        console.log('songview:/js/main.js:ipcMain.on(toMain): >>> CDLLECTIONS is defined!!!');
         // Get the first songlist and send it to the songview.js render process.
         // Send result back to renderer process
-        //mainWindow.webContents.send("fromMain", preference_data);
-        mainWindow.webContents.send("fromMain", JSON.stringify(preferences));
+        //MainWindow.webContents.send("fromMain", preference_data);
+
+//        MainWindow.webContents.send("fromMain", JSON.stringify(preferences));
+//        //MainWindow.webContents.send("fromMain", preferences);
+//console.log('songview:/js/main.js:ipcMain.on(toMain): Action: sendPreferences:  SENT pREFERENCES =', preferences);
+//        event.sender.send('fromMain', preferences);
       }
       else {
         // Collections is undefined, popup the preferences window.
@@ -272,6 +291,7 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
 };
 
 app.on('ready', () => {
+  console.log('songview:/js/main.js:app.on(ready): >>> MAINWindow =', MainWindow)
   // Initialize our application preferences.
   console.log('songview:/js/main.js: >>> start INITIALIZING PREFERENCES =', preferences);
   preferences = require('./preferences.js');
@@ -338,7 +358,8 @@ app.on('ready', () => {
     console.log('songview:/js/main.js: >>>>> preferences_file exists =', preferences_file)
     //preference_data = JSON.parse(fs.readFileSync(preferences_file));
     //console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
-    console.log('songview:/js/main.js:createWindow(): PREFERENCES =', preferences)
+
+    //MainWindow.webContents.send("deliverPreferences", JSON.stringify(preferences));
 
 /*
     //preferences.lmsRoot = preference_data.lms_root.folder;

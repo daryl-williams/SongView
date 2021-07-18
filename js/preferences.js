@@ -20,7 +20,9 @@ const store = new Store();
 let preferences = {
   lmsRoot: "",
   Browser: "",
-  Displays: [],
+  Displays: [
+    { "default":"Display #1"}
+  ],
   Collections: [],
   WindowLocation: [],
 
@@ -138,7 +140,7 @@ if (res === false) {
   preferenceFileExists = false;
 
   let updatePreferences = (newPreferences) => {
-    console.log('songview:/js/preferences.js:uupdatePreferencespdatePreferences(): preferencesFile =', preferencesFile, ', preferences =', preferences);
+    console.log('songview:/js/preferences.js:updatePreferences(): preferencesFile =', preferencesFile, ', preferences =', preferences);
 
     fs.writeFileSync(preferencesFile, JSON.stringify(preferences));
     console.log('songview:/js/preferences.js:updatePreferences(): wrote collections to preferencesFile =', preferencesFile);
@@ -178,7 +180,7 @@ if (res === false) {
     // Update the file-select-status DOM element.
     // by sending IPC to the render process to update 
     // the stautus element.
-    ipcMain.on('toPrefs', 'dom-update:file-select-status');
+//    ipcMain.on('toPrefs', 'dom-update:file-select-status');
 
   }
 
@@ -254,15 +256,27 @@ console.log('songview:/js/preferences.js:createWindow(): SENT UPDATE REQUEST = d
     });
   };
 
-  ipcMain.on("savePreferences", (event, new_preferences) => {
-    console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): savePreferences PREFERENCES =', new_preferences);
-    event.returnValue = JSON.stringify(new_preferences);
+  ipcMain.on("savePreferences", (event) => {
+    console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences PREFERENCES =', preferences);
+    //console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences NEW_PREFERENCES =', new_preferences);
+    event.returnValue = JSON.stringify(preferences);
+    process.env.PATH = preferences.lmsRoot + '/bin';
+    process.env.BROWSER_PATH = preferences.Browser;
+    //process.env.Displays = preferences.Display.default;
+
+    console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences PATH =', process.env.PATH);
+    console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences BROWSER_PATH =', process.env.BROWSER_PATH);
+
+     if (document.getElementById('song-collections') !== null) {
+        console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences collection =', document.getElementById('song-collections'));
+     }
+
     preferencesWindow.close();
     return;
   });
 
   ipcMain.on("getPreferences", (event, request) => {
-    console.log('songview:/js/preferences.js:ipcMain.on(getPreferences): REQUEST =', request);
+    console.log('songview:/js/preferences.js:ipcMain.on(getPreferences): getPreferences REQUEST =', request);
     console.log('songview:/js/preferences.js:ipcMain.on(getPreferences): PREFERENCES =', preferences);
     event.returnValue = JSON.stringify(preferences);
   });
@@ -273,10 +287,10 @@ console.log('songview:/js/preferences.js:createWindow(): SENT UPDATE REQUEST = d
     // updatePreferences() function.
     console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): >>> VALUE =', value);
     if (request === 'display') {
-      console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): REQUEST =', request);
-      console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): BEFORE =', preferences.Displays);
+      console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): DISPLAY REQUEST =', request);
+      console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): DISPLAY BEFORE =', preferences.Displays);
       preferences.Displays.push({"default": value});
-      console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): AFTER =', preferences);
+      console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): DISPLAY AFTER =', preferences);
       // Now write our preferences to disk.
       updatePreferences(preferences);
     }
@@ -291,6 +305,15 @@ console.log('songview:/js/preferences.js:createWindow(): SENT UPDATE REQUEST = d
       console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): UNKNOWN renderer REQUEST =', request);
     }
   });
+
+  ipcMain.on("sendPreferences", (event, data) => {
+    console.log('songview:/js/preferences.js:ipcMain.on(toPrefs): >>> sendPreferences DATA =', data);
+  });
+
+  ipcMain.on('asynchronous-message', (event, arg) => {
+    console.log('songview:/js/preferences.js:ipcMain.on(toPrefs): >>> ASYNC MSG =', arg);
+    event.returnValue = 'pong'
+  })
 
   ipcMain.on("displayFolderDialog", (event, dialog_title, dialog_message, dialog_property_type, preference_key) => {
     console.log('songview:/js/preferences.js:ipcMain.on(toPrefs): >>> dialog_title =', dialog_title);
@@ -310,12 +333,11 @@ else {
 
   // The file exists.
   preferenceData = JSON.parse(fs.readFileSync(preferencesFile));
-  console.log('songview:/js/preferences.js: FOUND preferenceData =', preferenceData);
-
   preferences = preferenceData;
+  console.log('songview:/js/preferences.js: USING preferences =', preferences);
 
 //console.log('songview:/js/preferences.js: COLLECTIONS LENGTH =', preferenceData.collections.length);
-console.log('songview:/js/preferences.js: preferenceData =', preferenceData);
+//console.log('songview:/js/preferences.js: preferenceData =', preferenceData);
 
   // If there are prefered/saved attributes capture them here.
   if (preferenceData && preferenceData.Collections.length > 0) {
@@ -323,8 +345,20 @@ console.log('songview:/js/preferences.js: preferenceData =', preferenceData);
     const dirTree = require("directory-tree");
     songlist = dirTree(preferenceData.Collections[0]);
     //console.log('songview:/js/preferences.js: SONGLIST =', songlist)
-    console.log('songview:/js/preferences.js: GOT SONGLIST!');
     preferences.SongList = songlist;
+    console.log('songview:/js/preferences.js: GOT SONGLIST, length =', preferences.SongList.children.length);
+
+/*
+    ipcMain.on('sendMyProps', (event, data) => {
+console.log('songview:/js/preferences.js:createWindow(): <<<>>> DATA =', data)
+console.log('songview:/js/preferences.js:createWindow(): <<<>>> sendProps =', preferences)
+      event.reply('sendMyProps', preferences);
+    });
+*/
+
+
+    //window.api.sendPreferences("toMain", preferences);
+//    MainWindow.webContents.deliverPreferences(preferences);
   }
 
 /*

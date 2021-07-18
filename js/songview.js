@@ -1,8 +1,11 @@
 /*
  * songview.js
-
-//'use strict';
+ *
  */
+
+'use strict';
+
+//const { app, contextBridge, ipcRenderer } = require("electron");
 
 var sv = sv || {};
 sv.collections = [];
@@ -10,6 +13,8 @@ sv.collections = [];
 var songlist;
 
 window.onload = function() {
+  //window.api.sendPreferences('fromGetPrefs', 'barbar');
+  //console.log('songview:/js/songview.js:window.onload(): SENT Request TO preferences.js:toMain: LOAD_PREFERENCES REQUEST');
 
 //  const inputElement = document.getElementById("browser-input");
 //  inputElement.addEventListener("change", function handleFiles() {
@@ -40,8 +45,10 @@ window.onload = function() {
   if (document.getElementById('song-collections') !== null) {
     console.log('songview:/js/songview.js:window.onload(): found song-collections div =', document.getElementById('song-collections'));
 
-    window.api.receive("fromMain", (dataStr) => {
-      //console.log('songview:/js/songview.js:window.onload(): received data from main process, data =', data);
+    window.api.send('deliverPreferences');
+
+    window.api.receive("deliverPreferences", (dataStr) => {
+      console.log('songview:/js/songview.js:window.onload(): >>> RECEIVED data from main process, data =', dataStr);
       if (dataStr !== undefined) {
         let data = JSON.parse(dataStr);
         console.log('songview:/js/songview.js:window.onload(): DATA =', data);
@@ -90,7 +97,9 @@ window.onload = function() {
   }
 
   // Ask the main process for our user preferences.
-  window.api.send('toMain', 'sendPreferences');
-console.log('songview:/js/songview.js:window.onload(): SENTO LOAD_PREFERENCES REQUEST');
+  //let preferences = window.api.sendPreferences('fromSongView');
+  //window.api.send('toMain', 'sendPreferences');
+  //console.log('songview:/js/songview.js:window.onload(): SENT Request TO preferences.js:toMain: LOAD_PREFERENCES REQUEST');
+
 }
 
