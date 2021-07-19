@@ -168,7 +168,7 @@ if (res === false) {
   })
   console.log('songview:/js/preferences.js: CREATED PREFERENCES WINDOW =', preferencesWindow);
   preferencesWindow.loadFile('preferences.html');
-  preferencesWindow.webContents.openDevTools(); // Developer Tools
+  //preferencesWindow.webContents.openDevTools(); // Developer Tools
 
   preferencesWindow.once('ready-to-show', () => {
     preferencesWindow.show()
@@ -366,6 +366,7 @@ else {
   // The file exists.
   //preferenceData = JSON.parse(fs.readFileSync(preferencesFile));
   //preferences = preferenceData;
+
   preferences = JSON.parse(fs.readFileSync(preferencesFile));
   console.log('songview:/js/preferences.js: USING preferences =', preferences);
 

@@ -41,9 +41,17 @@ let preference_data = {};
 
 function createWindow() {
 
-  let scriptname = process.env.INIT_CWD;
-  scriptname = scriptname.substring(scriptname.lastIndexOf('/')+1);
-  //console.log('songview:/js/main.js:createWindow(): SCRIPTNAME =', scriptname);
+  let scriptname;
+  console.log('songview:/js/main.js:createWindow(): PROCESS.ENV =', process.env);
+
+  if (process.env.INIT_CWD) {
+    scriptname = process.env.INIT_CWD;
+    scriptname = scriptname.substring(scriptname.lastIndexOf('/')+1);
+  }
+  else {
+    scriptname = "songSee";
+  }
+  console.log('songview:/js/main.js:createWindow(): SCRIPTNAME =', scriptname);
 
   let default_window_width = 1024, default_window_height = 600;
   // Create the application main window.
@@ -136,7 +144,7 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
 
   // Open the Application Main Window.
   MainWindow.loadFile('index.html')
-  MainWindow.webContents.openDevTools(); // Developer Tools
+  //MainWindow.webContents.openDevTools(); // Developer Tools
 
   let launchSong = (songfile, preferences) => {
     //console.log('songview:/js/main.js:launchSong(): launched songfile =', songfile);
@@ -144,11 +152,31 @@ console.log('songview:/js/main.js:createWindow(): preference_data =', preference
     //console.log('songview:/js/main.js:launchSong(): >> LMS_ROOT =', preference_data.lms_root);
 
     //const browser = preferences.value('browser').text.substring(6);
+
     const browser = preferences.Browser + '/Contents/MacOS/Safari'; //('browser').text.substring(6);
     console.log('songview:/js/main.js:launchSong(): >> BROWSER =', browser);
 
     process.env.LMS_ROOT = preferences.lmsRoot;
-    process.env.LMS_BROWSER_PATH = '/Applications/Opt/Firefox.app/Contents/MacOS/firefox' // browser; // '/Applications/Opt/Firefox.app/Contents/MacOS/firefox';
+    process.env.LMS_BROWSER_PATH = preferences.Browser[0];
+
+/*
+    if (process.platform === 'darwin') {
+      process.env.LMS_BROWSER_PATH = '/Applications/Opt/Firefox.app/Contents/MacOS/firefox' // browser; // '/Applications/Opt/Firefox.app/Contents/MacOS/firefox';
+    }
+    else if (process.platform === 'darwin') {
+      process.env.LMS_BROWSER_PATH = '/Applications/Opt/Firefox.app/Contents/MacOS/firefox' // browser; // '/Applications/Opt/Firefox.app/Contents/MacOS/firefox';
+    }
+    else if (process.platform === 'darwin') {{
+      // What do we do for Windows???
+      browser = path.resolve('C:\\Program Files\\', 'edge');
+      preferencesFile += app.getPath('userData');
+    }
+    else {
+      console.log('songview:/js/main.js:launchSong(): ERROR unknown browser =', process.env.LMS_BROWSER_PATH);
+      return;
+    }
+*/
+
     process.env.LMS_SCREEN_HEIGHT = 720;
     process.env.LMS_SCREEN_WIDTH = 1280;
     process.env.PATH = preferences.lmsRoot + '/bin:' + process.env.PATH;
