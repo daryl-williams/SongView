@@ -12,15 +12,37 @@ sv.collections = [];
 
 var songlist;
 
-window.onload = function() {
-  //window.api.sendPreferences('fromGetPrefs', 'barbar');
-  //console.log('songview:/js/songview.js:window.onload(): SENT Request TO preferences.js:toMain: LOAD_PREFERENCES REQUEST');
+var songHandler = (event) => {
+  let songname = event.target.getAttribute('data-filename');
+  console.log('songview:/js/songview.js:window.onload(): SONG SELECTED =', songname);
+  window.api.send("toMain", "open-song:" + songname);
+}
 
-//  const inputElement = document.getElementById("browser-input");
-//  inputElement.addEventListener("change", function handleFiles() {
-//    const filelist = this.files; /* now you can work with the file list */
-//    console.log("songview:/js/preload.js: FILELIST =", filelist);
-//  }, false);
+function populateSongList(songlist) {
+  console.log('songview:/js/songview.js:populateSongList(): songlist.length =', songlist.length);
+
+  if (document.getElementById('songlist-div') !== null) {
+    console.log('songview:/js/songview.js:window.onload(): FOUND songlist DIV =', document.getElementById('songlist-div'));
+    for (let i=0, len=songlist.length; i<len; i++) {
+      //console.log('songview:/js/songview.js:window.onload(): SONGLIST['+i+'] =', songlist[i].name);
+      let li = document.createElement('li');
+      let filename = songlist[i].name;
+      let title = filename
+        .substring(0, filename.lastIndexOf('.'))
+        .split("_")
+        .filter(x => x.length > 0)
+        .map((x) => (x.charAt(0).toUpperCase() + x.slice(1)))
+        .join(" ");
+
+      li.innerHTML = title;
+      li.setAttribute('data-filename', songlist[i].name);
+      li.addEventListener("click", songHandler);
+      document.getElementById('ul-songlist').appendChild(li);
+    }
+  }
+}
+
+window.onload = function() {
 
 /*
   if (document.getElementById('ul-preferences') !== null) {
@@ -45,15 +67,27 @@ window.onload = function() {
   if (document.getElementById('song-collections') !== null) {
     console.log('songview:/js/songview.js:window.onload(): found song-collections div =', document.getElementById('song-collections'));
 
-    window.api.send('deliverPreferences');
+    window.api.receive('preferenceDelivery', (dataStr) => {
+      //console.log('songview:/js/songview.js:window.onload():preferenceDelivery():  !!! RECEIVED data from main process, dataStr =', dataStr);
+      let json = JSON.parse(dataStr);
+      console.log('songview:/js/songview.js:window.onload():preferenceDelivery():  !!! RECEIVED data from main process, JSON =', json);
+      populateSongList(json.SongList.children);
+    })
+
+    // Ask the main process to send us the application preferences
+    // so we can fill in the song collections and the songlist.
+    window.api.send('browserReady');
+    console.log('songview:/js/songview.js:window.onload(): >>> SENT BROWSER READY MESSAGE')
 
     window.api.receive("deliverPreferences", (dataStr) => {
-      console.log('songview:/js/songview.js:window.onload(): >>> RECEIVED data from main process, data =', dataStr);
-      if (dataStr !== undefined) {
-        let data = JSON.parse(dataStr);
-        console.log('songview:/js/songview.js:window.onload(): DATA =', data);
-        const song_collection = data.Collections;
+      console.log('songview:/js/songview.js:window.onload(): >>> browserReady RECEIVED preferences from main process, dataStr =', dataStr.length);
+      if (typeof dataStr !== 'undefined') {
+        let preferences = JSON.parse(dataStr);
+        console.log('songview:/js/songview.js:window.onload(): PREFERENCE DATA =', preferences);
+        const song_collection = preferences.Collections;
         console.log('SONG_COLLECTION =', song_collection);
+
+        // Handle mutiple song collections...
 //        for (let i=0, len=song_collection.length; i<len; i++) {
 //          console.log('SONG_COLLECTION['+i+'] =', song_collection[i]);
           let option = document.createElement('option');
@@ -64,17 +98,16 @@ window.onload = function() {
           document.getElementById('song-collections').add(option);
 //        }
 
-        const songlist = data.SongList.children;
+        const songlist = preferences.SongList;
         //console.log('songview:/js/songview.js:window.onload(): SONGLIST =', songlist);
+console.log('songview:/js/songview.js:window.onload(): LOOKING FOR songlist DIV =', document.getElementById('songlist-div'));
 
-        let songHandler = (event) => {
-          let songname = event.target.getAttribute('data-filename');
-          console.log('songview:/js/songview.js:window.onload(): SONG SELECTED =', songname);
-          window.api.send("toMain", "open-song:" + songname);
+        if (preferences.SongList.children) {
+          populateSongList(preferences.SongList.children);
         }
-
+/*
         if (document.getElementById('songlist-div') !== null) {
-//console.log('songview:/js/songview.js:window.onload(): FOUND songlist DIV =', document.getElementById('songlist-div'));
+console.log('songview:/js/songview.js:window.onload(): FOUND songlist DIV =', document.getElementById('songlist-div'));
           for (let i=0, len=songlist.length; i<len; i++) {
             //console.log('songview:/js/songview.js:window.onload(): SONGLIST['+i+'] =', songlist[i].name);
             let li = document.createElement('li');
@@ -92,6 +125,7 @@ window.onload = function() {
             document.getElementById('ul-songlist').appendChild(li);
           }
         }
+*/
       }
     });
   }

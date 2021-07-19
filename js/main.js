@@ -71,10 +71,10 @@ function createWindow() {
 //  MainWindow.webContents.postMessage('port', null, [port2]);
 //  port1.postMessage({ some: 'message' })
 
-    ipcMain.on('deliverPreferences', (event, data) => {
-console.log('songview:/js/main.js:createWindow(): >>> sendProps =', data)
-      event.reply('deliverPreferences', JSON.stringify(preferences));
-    });
+//    ipcMain.on('deliverPreferences', (event, data) => {
+//console.log('songview:/js/main.js:createWindow(): >>> sendProps =', data)
+//      event.reply('deliverPreferences', JSON.stringify(preferences));
+//    });
 
 //  MainWindow.webContents.send("sendPreferences", preferences);
 //  console.log('songview:/js/main.js:createWindow(): SENT PREFERENCES =', preferences)
@@ -290,6 +290,26 @@ console.log('songview:/js/main.js:ipcMain.on(toMain): CWD =', process.cwd());
   });
 };
 
+  ipcMain.on("savePreferences", (event) => {
+    console.log('songview:/js/main.js:ipcMain.on(savePreferences): !!!>>> savePreferences PREFERENCES =', preferences);
+    //console.log('songview:/js/main.js:ipcMain.on(savePreferences): >>> savePreferences EVENT =', event);
+
+    process.env.PATH = preferences.lmsRoot + '/bin';
+    process.env.BROWSER_PATH = preferences.Browser;
+    //process.env.Displays = preferences.Display.default;
+
+    console.log('songview:/js/main.js:ipcMain.on(savePreferences): !!!>>> savePreferences PATH =', process.env.PATH);
+    console.log('songview:/js/main.js:ipcMain.on(savePreferences): !!!>>> savePreferences BROWSER_PATH =', process.env.BROWSER_PATH);
+    //console.log('songview:/js/main.js:ipcMain.on(savePreferences): >>> savePreferences MAIN_WINDOW =', MainWindow);
+
+    event.returnValue = JSON.stringify(preferences);
+
+    MainWindow.webContents.send('preferenceDelivery', JSON.stringify(preferences));
+    console.log('songview:/js/main.js:ipcMain.on(savePreferences): >>> savePreferences SENT PREFERENCES =', preferences);
+
+    return;
+  });
+
 app.on('ready', () => {
   console.log('songview:/js/main.js:app.on(ready): >>> MAINWindow =', MainWindow)
   // Initialize our application preferences.
@@ -359,6 +379,7 @@ app.on('ready', () => {
     //preference_data = JSON.parse(fs.readFileSync(preferences_file));
     //console.log('songview:/js/main.js:createWindow(): PREFERENCE_DATA =', preference_data)
 
+    // MainWindow ends up undefined here for some reason...
     //MainWindow.webContents.send("deliverPreferences", JSON.stringify(preferences));
 
 /*
@@ -424,9 +445,17 @@ console.log('songview:/js/main.js: &&&&&& PREFERENCES =', preferences);
   createWindow();
 });
 
+ipcMain.on('browserReady', (event, data) => {
+  console.log('songview:/js/main.js:clientReady(): CLIENT READY <<<>>> sendProps =', preferences)
+  // Send proferences.
+  event.reply('deliverPreferences', JSON.stringify(preferences));
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
+
+module.exports = MainWindow;
 

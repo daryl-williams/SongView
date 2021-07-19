@@ -20,14 +20,6 @@ let preferences = {
   Displays: [],
   Collections: [],
   WindowLocation: [],
-/*
-  show: function value(arg) {
-    console.log('songview:/js/preferences.js:show(arg) =', arg);
-  },
-  value: function value(arg) {
-    console.log('songview:/js/preferences.js:value(arg) =', arg);
-  }
-*/
 };
 
 window.onload = function() {
@@ -44,10 +36,10 @@ window.onload = function() {
     document.getElementById('save-preferences-button').addEventListener('click', (event) => {
       console.log('songview:/js/preferences-window.js:window.onload(): CLICK save-preferences-button =', document.getElementById('save-preferences-button'));
       // Save Preferences and quit.
-      console.log('songview:/js/preferences-window.js:window.onload(): SAVING PREFERENCES =', preferences);
+      //console.log('songview:/js/preferences-window.js:window.onload(): SAVING PREFERENCES =', preferences);
       //let saved = ipcRenderer.sendSync('savePreferences', preferences);
       let saved = ipcRenderer.sendSync('savePreferences', preferences);
-      console.log('songview:/js/preferences-window.js:window.onload(): SAVED =', saved);
+      //console.log('songview:/js/preferences-window.js:window.onload(): SAVED =', saved);
       return;
     });
   }

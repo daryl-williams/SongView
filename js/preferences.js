@@ -11,9 +11,10 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { session, ipcMain, BrowserWindow, app, screen, dialog } = require('electron');
+const { session, ipcRenderer, ipcMain, BrowserWindow, app, screen, dialog } = require('electron');
 const Store = require('./store.js');
 const store = new Store();
+const MainWindow = require('os');
 
 //console.log('songview:/js/preferences.js: ipcMain =', ipcMain)
 
@@ -139,14 +140,14 @@ if (res === false) {
 
   preferenceFileExists = false;
 
-  let updatePreferences = (newPreferences) => {
-    console.log('songview:/js/preferences.js:updatePreferences(): preferencesFile =', preferencesFile, ', preferences =', preferences);
+  let updatePreferencesFile = (newPreferences) => {
+    console.log('songview:/js/preferences.js:updatePreferencesFile(): preferencesFile =', preferencesFile, ', preferences =', preferences);
 
     fs.writeFileSync(preferencesFile, JSON.stringify(preferences));
-    console.log('songview:/js/preferences.js:updatePreferences(): wrote collections to preferencesFile =', preferencesFile);
+    console.log('songview:/js/preferences.js:updatePreferencesFile(): wrote collections to preferencesFile =', preferencesFile);
 
     preference_data = JSON.parse(fs.readFileSync(preferencesFile));
-    console.log('songview:/js/preferences.js:updatePreferences(): preference_data =', preference_data)
+    console.log('songview:/js/preferences.js:updatePreferencesFile(): preference_data =', preference_data)
   }
 
   let default_window_width = 800, default_window_height = 600;
@@ -223,8 +224,29 @@ console.log('songview:/js/preferences.js:openFolderDialog():dialog.showOpenDialo
 //          preferences['lmsRoot'] = folderObj['preference_key'];
 
           console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> OLD preferences =', preferences);
+
           preferences[preference_key] = folderObj[preference_key];
           console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> NEW preferences =', preferences);
+
+        if (preferences.Collections.length) {
+          const folderStr = "{\"" + preference_key + "\": " + JSON.stringify(result.filePaths) + "}";
+          console.log('songview:/js/preferences.js: >>> FOLDER_STR =', folderStr);
+
+          const dirTree = require("directory-tree");
+          songlist = dirTree(preferences.Collections[0]);
+          //console.log('songview:/js/preferences.js: SONGLIST =', songlist)
+          preferences.SongList = songlist;
+          console.log('songview:/js/preferences.js: GOT SONGLIST, length =', preferences.SongList.length);
+
+          folderObj = JSON.parse(folderStr);
+          console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> folderStr =', folderStr);
+          console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> folderObj =', folderObj);
+          console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> folderFieldLabel =', preference_key);
+          console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> ADD FIELD =', preference_key);
+//          preferences['Collections'] = folderObj[preference_key];
+          console.log('songview:/js/preferences.js:dialog.showOpenDialog(): >>> NEW preferences =', preferences);
+        }
+
 
 //        }
 //        else if (preference_key === 'collections') {
@@ -244,7 +266,7 @@ console.log('songview:/js/preferences.js:openFolderDialog():dialog.showOpenDialo
         //preferences.lmsRoot = folderObj.lmsRoot;
 
         // Now write our preferences to disk.
-        updatePreferences(folderObj);
+        updatePreferencesFile(folderObj);
 
         //updateFolderSelectStatus();
         preferencesWindow.webContents.send('dom-update:file-select-status', result.filePaths[0]);
@@ -257,21 +279,25 @@ console.log('songview:/js/preferences.js:createWindow(): SENT UPDATE REQUEST = d
   };
 
   ipcMain.on("savePreferences", (event) => {
-    console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences PREFERENCES =', preferences);
-    //console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences NEW_PREFERENCES =', new_preferences);
-    event.returnValue = JSON.stringify(preferences);
+    console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences PREFERENCES =', typeof preferences);
+    //console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences EVENT =', event);
+/*
     process.env.PATH = preferences.lmsRoot + '/bin';
     process.env.BROWSER_PATH = preferences.Browser;
     //process.env.Displays = preferences.Display.default;
 
     console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences PATH =', process.env.PATH);
     console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences BROWSER_PATH =', process.env.BROWSER_PATH);
+    //console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences MAIN_WINDOW =', MainWindow);
 
-     if (document.getElementById('song-collections') !== null) {
-        console.log('songview:/js/preferences.js:ipcMain.on(savePreferences): >>> savePreferences collection =', document.getElementById('song-collections'));
-     }
+    event.returnValue = JSON.stringify(preferences);
+    
+    preferences.prefWin = preferencesWindow;
 
+    MainWindow.webContents.send('preferenceDelivery', JSON.stringify(preferences));
+*/
     preferencesWindow.close();
+
     return;
   });
 
@@ -292,14 +318,14 @@ console.log('songview:/js/preferences.js:createWindow(): SENT UPDATE REQUEST = d
       preferences.Displays.push({"default": value});
       console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): DISPLAY AFTER =', preferences);
       // Now write our preferences to disk.
-      updatePreferences(preferences);
+      updatePreferencesFile(preferences);
     }
     else if (request === 'window-coordinates') {
       console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): REQUEST =', request);
       console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): BEFORE PREFERENCES =', preferences);
       preferences.WindowLocation = value;
       console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): AFTER PREFERENCES =', preferences);
-      updatePreferences(preferences);
+      updatePreferencesFile(preferences);
     }
     else {
       console.log('songview:/js/preferences.js:ipcMain.on(updatePreferences): UNKNOWN renderer REQUEST =', request);
@@ -328,59 +354,41 @@ else {
   // The preference file exists.
   console.log('songview:/js/preferences.js: The Preferences File Exists =', res);
 
-//  preferenceFileExists = true;
+  preferenceFileExists = true;
 //  console.log('songview:/js/preferences.js: >>> BROWSER =', browser);
 
+//  ipcMain.on('browserReady', (event, data) => {
+//console.log('songview:/js/preferences.js:clientReady(): CLIENT READY <<<>>> DATA =', data)
+//console.log('songview:/js/preferences.js:clientReady(): CLIENT READY <<<>>> sendProps =', preferences)
+//    event.reply('browserReady', preferences);
+//  });
+
   // The file exists.
-  preferenceData = JSON.parse(fs.readFileSync(preferencesFile));
-  preferences = preferenceData;
+  //preferenceData = JSON.parse(fs.readFileSync(preferencesFile));
+  //preferences = preferenceData;
+  preferences = JSON.parse(fs.readFileSync(preferencesFile));
   console.log('songview:/js/preferences.js: USING preferences =', preferences);
 
-//console.log('songview:/js/preferences.js: COLLECTIONS LENGTH =', preferenceData.collections.length);
-//console.log('songview:/js/preferences.js: preferenceData =', preferenceData);
+console.log('songview:/js/preferences.js: COLLECTIONS LENGTH =', preferences.Collections.length);
 
   // If there are prefered/saved attributes capture them here.
-  if (preferenceData && preferenceData.Collections.length > 0) {
-    console.log('songview:/js/preferences.js: FOUND COLLECTIONS =', preferenceData.Collections);
+  if (typeof preferences !== 'undefined' && preferences.Collections.length > 0) {
+    // Add SongList to preferences.
+    console.log('songview:/js/preferences.js: FOUND COLLECTIONS =', preferences.Collections);
     const dirTree = require("directory-tree");
-    songlist = dirTree(preferenceData.Collections[0]);
+    songlist = dirTree(preferences.Collections[0]);
     //console.log('songview:/js/preferences.js: SONGLIST =', songlist)
+    console.log('songview:/js/preferences.js: PREFS =', preferences)
     preferences.SongList = songlist;
     console.log('songview:/js/preferences.js: GOT SONGLIST, length =', preferences.SongList.children.length);
-
-/*
-    ipcMain.on('sendMyProps', (event, data) => {
-console.log('songview:/js/preferences.js:createWindow(): <<<>>> DATA =', data)
-console.log('songview:/js/preferences.js:createWindow(): <<<>>> sendProps =', preferences)
-      event.reply('sendMyProps', preferences);
-    });
-*/
-
-
-    //window.api.sendPreferences("toMain", preferences);
-//    MainWindow.webContents.deliverPreferences(preferences);
   }
 
-/*
-  else {
-    // We neeed to set our user preferences.
-    //console.log('songview:/js/preferences.js: NEED PREFERENCES DIALOG.');
-//    preferences.show();
-//    ipcRenderer.send('synchronous-message', 'edit-preferences')
-  }
-*/
-
-  if (preferenceData.windowBounds !== undefined) {
-    default_window_width = preferenceData.windowBounds.width;
-    default_window_height = preferenceData.windowBounds.height;
+  if (preferences.windowBounds !== undefined) {
+    default_window_width = preferences.windowBounds.width;
+    default_window_height = preferences.windowBounds.height;
     console.log('songview:/js/preferences.js:createWindow(): Window location X =', default_window_width);
     console.log('songview:/js/preferences.js:createWindow(): Window location Y =', default_window_height);
   }
-
-  //window.api.send("toMain", "savePreferences: " + preferences);
-
-  //const myPref = preferences.value('songlist');
-  //console.log('songview:/js/preferences.js: xxxDATA_STORE =', myPref);
 }
 
 module.exports = preferences;

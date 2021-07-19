@@ -34,6 +34,7 @@ process.once('loaded', () => {
 //  ipcRenderer.send('reply', 'fooish testing...');
 
   contextBridge.exposeInMainWorld("api", {
+    /*
     deliverPreferences: async (channel, data) => {
       console.log('songview:/js/preload.js:deliverPreferences(): deliverPreferences channel =', channel, ', data =', data);
       ipcRenderer.on(channel, (event, data) => {
@@ -50,20 +51,26 @@ process.once('loaded', () => {
 //        console.log('songview:/js/preload.js:deliverPreferences(): invalid channel =', channel);
 //      }
     },
+    */
     send: (channel, data) => {
         console.log('songview:/js/preload.js:send(): <><><> SEND channel =', channel);
+
       // Whitelist channels.
-      let validChannels = ["toMain", "deliverPreferences", "sendPreferences", "fromMain"];
+      let validChannels = ["browserReady", "toMain", "deliverPreferences", "sendPreferences", "preferenceDelivery", "fromMain"];
       if (validChannels.includes(channel)) {
         console.log('songview:/js/preload.js:send(): VALID channel =', channel);
         console.log('songview:/js/preload.js:send(): DATA =', data);
+
         ipcRenderer.send(channel, data);
       } else {
         console.log('songview:/js/preload.js:send(): invalid channel =', channel);
       }
     },
     receive: (channel, func) => {
-      let validChannels = ["deliverPreferences", "fromMain", "fromPrefs"];
+      console.log('songview:/js/preload.js:receive(): <><><> RECEIVE channel =', channel);
+      console.log('songview:/js/preload.js:receive(): <><><> RECEIVE func =', func);
+
+      let validChannels = ["browserReady", "deliverPreferences", "fromMain", "preferenceDelivery", "fromPrefs"];
       if (validChannels.includes(channel)) {
         console.log('songview:/js/preload.js:receive(): VALID channel =', channel);
         // Deliberately strip event as it includes `sender` 
